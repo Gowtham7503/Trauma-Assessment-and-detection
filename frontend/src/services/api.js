@@ -7,10 +7,15 @@ export async function apiRequest(path, options = {}) {
     ...options,
   });
 
+  const contentType = response.headers.get("content-type") || "";
+  const payload = contentType.includes("application/json")
+    ? await response.json()
+    : null;
+
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    const detail = payload?.detail ? ` ${payload.detail}` : "";
+    throw new Error(`${payload?.error || `API request failed: ${response.status}`}${detail}`);
   }
 
-  return response.json();
+  return payload;
 }
-

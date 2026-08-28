@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Send, Loader2, RefreshCw, HeartPulse } from "lucide-react";
+import { HeartPulse, Loader2, RefreshCw, Send } from "lucide-react";
 import { useChat } from "../hooks/useChat.js";
 import { apiRequest } from "../services/api.js";
 import Message from "./Message.jsx";
@@ -74,6 +75,17 @@ function buildFeedback(answers, apiResponse) {
       "Review your personalized care plan whenever new life stressors emerge."
     ],
   };
+const openingQuestion = "What experience or situation would you like support with today?";
+
+const quickSuggestions = [
+  "Struggling with memories of a past event",
+  "Feeling overwhelmed by recent emotional stress",
+  "Experiencing sudden anxiety and tension",
+];
+
+function buildSessionDetails(messages, createdAt) {
+  const userMessages = messages.filter((message) => message.sender === "user");
+  const assistantMessages = messages.filter((message) => message.sender !== "user");
 
   const summaries = {
     High: "High Stress & Trauma Support Priority: Response analysis indicates acute emotional/physical strain requiring active intervention and stress de-escalation.",
@@ -88,22 +100,50 @@ function buildFeedback(answers, apiResponse) {
     backendReply: apiResponse?.reply || "Assessment completed successfully. Tailored trauma & stress management plan generated.",
     summary: summaries[riskLevel],
     createdAt: new Date().toISOString(),
+    createdAt,
+    totalMessages: messages.length,
+    userResponses: userMessages.length,
+    assistantResponses: assistantMessages.length,
   };
 }
 
 export default function ChatBox({ onFeedback, onNavigate }) {
   const { messages, addMessage, resetMessages } = useChat();
   const [draft, setDraft] = useState("");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
   const [isSending, setIsSending] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
+  const [error, setError] = useState("");
 
-  const currentPrompt = prompts[stepIndex] || prompts[0];
-  const progressPercent = Math.round(((stepIndex + 1) / prompts.length) * 100);
+  const visibleMessages = messages.length
+    ? messages
+    : [{ id: 1, sender: "bot", text: openingQuestion }];
+  const hasUserResponse = visibleMessages.some((message) => message.sender === "user");
+
+  const createFeedback = async (transcript) => {
+    const apiResponse = await apiRequest("/chat/feedback", {
+      method: "POST",
+      body: JSON.stringify({ messages: transcript }),
+    });
+    const createdAt = new Date().toISOString();
+
+    onFeedback({
+      ...apiResponse.feedback,
+      answers: transcript
+        .filter((message) => message.sender === "user")
+        .reduce((currentAnswers, message, index) => {
+          currentAnswers[`response${index + 1}`] = message.text;
+          return currentAnswers;
+        }, {}),
+      transcript,
+      sessionDetails: buildSessionDetails(transcript, createdAt),
+      createdAt,
+    });
+    onNavigate("feedback");
+  };
 
   const submitAnswer = async (answerText) => {
     const trimmed = answerText.trim();
-    if (!trimmed || isSending) return;
+    if (!trimmed || isSending || isFinishing) return;
 
     // Add user's response to chat
     const userMsgId = Date.now();
@@ -136,6 +176,13 @@ export default function ChatBox({ onFeedback, onNavigate }) {
       sender: "bot",
       text: "Thank you. Analyzing your responses and generating your trauma & stress assessment feedback...",
     });
+    const userMessage = { id: Date.now(), sender: "user", text: trimmed };
+    const nextTranscript = [...visibleMessages, userMessage];
+    addMessage(userMessage);
+    setDraft("");
+    setError("");
+    setIsSending(true);
+    let latestTranscript = nextTranscript;
 
     let apiResponse = null;
     try {
@@ -145,11 +192,29 @@ export default function ChatBox({ onFeedback, onNavigate }) {
       });
     } catch (error) {
       console.warn("Backend API unavailable, using clinical fallback feedback generator:", error);
+        body: JSON.stringify({ messages: nextTranscript }),
+      });
+      const botMessage = {
+        id: Date.now() + 1,
+        sender: "bot",
+        text: apiResponse.reply,
+      };
+      const completedTranscript = [...nextTranscript, botMessage];
+
+      latestTranscript = completedTranscript;
+      setMessages(completedTranscript);
+
+      if (apiResponse.readyForFeedback) {
+        setIsFinishing(true);
+        await createFeedback(completedTranscript);
+      }
+    } catch (requestError) {
+      setMessages(latestTranscript);
+      setError(requestError.message || "The counselling API is not responding. Please check the backend and Groq connection.");
     } finally {
       const generatedFeedback = buildFeedback(updatedAnswers, apiResponse);
       onFeedback(generatedFeedback);
       setIsSending(false);
-      onNavigate("feedback");
     }
   };
 
@@ -158,16 +223,32 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     submitAnswer(draft);
   };
 
+  const handleFinish = async () => {
+    if (!hasUserResponse || isFinishing) return;
+
+    setError("");
+    setIsFinishing(true);
+
+    try {
+      await createFeedback(visibleMessages);
+    } catch (requestError) {
+      setError(requestError.message || "The counselling API could not generate feedback. Please check the backend and Groq connection.");
+    } finally {
+      setIsFinishing(false);
+    }
+  };
+
   const handleReset = () => {
     resetMessages();
     setStepIndex(0);
     setAnswers({});
+    setMessages([]);
     setDraft("");
+    setError("");
   };
 
   return (
     <div className="chat-box">
-      {/* Live Clinical Assessment Header */}
       <div className="chat-header">
         <div className="chat-header-info">
           <div className="chat-avatar-badge">
@@ -180,9 +261,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
                 <span className="online-dot" /> Live Active
               </span>
             </div>
-            <p className="chat-subtitle">
-              Step {stepIndex + 1} of 3: {currentPrompt.stepName}
-            </p>
+            <p className="chat-subtitle">Free-form assessment conversation</p>
           </div>
         </div>
 
@@ -190,22 +269,18 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           type="button"
           className="chat-reset-btn"
           onClick={handleReset}
-          title="Restart Assessment"
+          title="Restart assessment"
+          disabled={isSending || isFinishing}
         >
           <RefreshCw size={15} />
           <span>Reset</span>
         </button>
       </div>
 
-      {/* Assessment Progress Meter Bar */}
       <div className="chat-progress-track">
-        <div 
-          className="chat-progress-fill" 
-          style={{ width: `${progressPercent}%` }} 
-        />
+        <div className="chat-progress-fill" style={{ width: hasUserResponse ? "100%" : "20%" }} />
       </div>
 
-      {/* Messages Scroll Area */}
       <div className="message-list">
         {messages.map((message) => (
           <Message key={message.id} role={message.sender}>
@@ -214,12 +289,11 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         ))}
       </div>
 
-      {/* Quick Suggestion Chips */}
-      {!isSending && currentPrompt.suggestions && (
+      {!isSending && !hasUserResponse && (
         <div className="chat-suggestions">
           <span className="suggestion-label">Quick options (click to select):</span>
           <div className="suggestion-chips">
-            {currentPrompt.suggestions.map((suggestion) => (
+            {quickSuggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
@@ -233,7 +307,6 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         </div>
       )}
 
-      {/* Chat Input Form */}
       <form className="chat-form" onSubmit={handleFormSubmit}>
         <input
           type="text"
@@ -242,12 +315,19 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           placeholder={isSending ? "Calculating feedback..." : "Type your response here or select a quick option above..."}
           aria-label="Type your response"
           disabled={isSending}
+          placeholder={isFinishing ? "Preparing feedback..." : isSending ? "Thinking..." : "Type your response..."}
+          aria-label="Type a message"
+          disabled={isSending || isFinishing}
         />
-        <button type="submit" className="primary-btn" disabled={isSending || !draft.trim()}>
+        <button
+          type="submit"
+          className="primary-btn"
+          disabled={isSending || isFinishing || !draft.trim()}
+        >
           {isSending ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              <span>Analyzing...</span>
+              <span>Sending</span>
             </>
           ) : (
             <>
@@ -256,7 +336,16 @@ export default function ChatBox({ onFeedback, onNavigate }) {
             </>
           )}
         </button>
+        <button
+          type="button"
+          className="secondary-btn"
+          onClick={handleFinish}
+          disabled={!hasUserResponse || isFinishing || isSending}
+        >
+          {isFinishing ? "Finishing" : "Finish"}
+        </button>
       </form>
+      {error && <p className="form-error">{error}</p>}
     </div>
   );
 }

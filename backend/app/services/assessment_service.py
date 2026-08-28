@@ -17,6 +17,33 @@ from app.utils.pii_masking import (
     mask_pii
 )
 
+from datetime import datetime, timezone
+
+from pymongo.errors import DuplicateKeyError
+
+from app.database.mongodb import assessments_collection
+from app.models.assessment_model import (
+    create_assessment_document,
+    serialize_assessment,
+)
+
+from app.services.llm_service import (
+    generate_questions,
+    generate_final_assessment
+)
+
+from app.services.safety_service import (
+    basic_safety_screen
+)
+
+from app.utils.pii_masking import (
+    mask_pii
+)
+
+
+def summarize_assessment(responses):
+    return {"responses": responses, "risk_level": "pending"}
+
 
 # ==================================================
 # START ASSESSMENT
@@ -255,3 +282,78 @@ def complete_assessment(
     # ----------------------------------------------
 
     return result
+    return result
+def create_assessment(
+    session_id,
+    complaint,
+    questions=None,
+):
+    document = create_assessment_document(
+        session_id=session_id,
+        complaint=complaint,
+        questions=questions,
+    )
+
+    try:
+        result = assessments_collection.insert_one(document)
+
+    except DuplicateKeyError:
+        return get_assessment(session_id)
+
+    document["_id"] = result.inserted_id
+
+    return serialize_assessment(document)
+
+
+def get_assessment(session_id):
+    document = assessments_collection.find_one({
+        "session_id": session_id
+    })
+
+    return serialize_assessment(document)
+
+
+def save_questions(session_id, questions):
+    assessments_collection.update_one(
+        {"session_id": session_id},
+        {
+            "$set": {
+                "questions": questions,
+                "status": "questions_generated",
+                "updated_at": datetime.now(timezone.utc),
+            }
+        },
+        upsert=True,
+    )
+
+    return get_assessment(session_id)
+
+
+def save_answers(session_id, answers):
+    assessments_collection.update_one(
+        {"session_id": session_id},
+        {
+            "$set": {
+                "answers": answers,
+                "status": "answers_submitted",
+                "updated_at": datetime.now(timezone.utc),
+            }
+        },
+    )
+
+    return get_assessment(session_id)
+
+
+def save_assessment_result(session_id, result):
+    assessments_collection.update_one(
+        {"session_id": session_id},
+        {
+            "$set": {
+                "result": result,
+                "status": "completed",
+                "updated_at": datetime.now(timezone.utc),
+            }
+        },
+    )
+
+    return get_assessment(session_id)

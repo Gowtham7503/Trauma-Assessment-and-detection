@@ -12,7 +12,8 @@ export default function Chat({ onFeedback, onNavigate }) {
           </div>
           <h1 style={{ marginTop: "0.5rem" }}>Trauma Assessment</h1>
           <p className="lead">
-            Answer three short prompts to analyze emotional impact, risk priority level, and tailored coping guidance.
+            The chat follows each response with focused trauma-screening questions and prepares
+            feedback when you finish.
           </p>
         </div>
       </div>
