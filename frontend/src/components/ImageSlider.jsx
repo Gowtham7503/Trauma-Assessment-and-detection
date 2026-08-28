@@ -1,49 +1,49 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, HeartPulse, ShieldCheck, Sparkles, MessageCircleHeart } from "lucide-react";
+import { ChevronLeft, ChevronRight, HeartPulse, ShieldCheck, Activity, Stethoscope } from "lucide-react";
 import defaultHero from "../assets/trauma-support-hero.png";
 import secondaryHero from "../assets/hero.png";
 
 const slides = [
   {
     id: 1,
-    title: "Compassionate Trauma Assessment",
-    subtitle: "A gentle, supportive approach designed to listen before asking sensitive questions.",
-    image: defaultHero,
-    badge: "Trauma-Informed Care",
+    title: "Trauma-Informed Psychological Assessment",
+    subtitle: "A compassionate, structured clinical triage approach designed to listen gently and establish emotional safety.",
+    image: "https://images.unsplash.com/photo-1527137342181-19aab11a8ee8?auto=format&fit=crop&w=1400&q=80",
+    fallbackImage: defaultHero,
+    badge: "Clinical Triage & Support",
     icon: HeartPulse,
     accentColor: "from-teal-500 to-emerald-700",
-    bgGradient: "linear-gradient(135deg, rgba(20, 184, 166, 0.85), rgba(15, 118, 110, 0.95))"
   },
   {
     id: 2,
-    title: "AI-Powered Risk Detection",
-    subtitle: "Real-time analysis to prioritize care urgency and offer personalized action plans.",
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
-    badge: "Smart Analytics",
-    icon: ShieldCheck,
-    accentColor: "from-indigo-500 to-purple-800",
-    bgGradient: "linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(67, 56, 202, 0.95))"
+    title: "Real-Time Neural & Stress Detection",
+    subtitle: "Advanced screening analytics that evaluate emotional strain, PTSD indicators, and care priority.",
+    image: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=1400&q=80",
+    fallbackImage: secondaryHero,
+    badge: "AI Risk Screening",
+    icon: Activity,
+    accentColor: "from-cyan-500 to-blue-800",
   },
   {
     id: 3,
-    title: "Safe & Confidential Space",
-    subtitle: "Private, non-judgmental environment to express your thoughts at your own pace.",
-    image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&w=1200&q=80",
-    badge: "Private & Secure",
-    icon: MessageCircleHeart,
-    accentColor: "from-purple-500 to-pink-700",
-    bgGradient: "linear-gradient(135deg, rgba(168, 85, 247, 0.85), rgba(126, 34, 206, 0.95))"
+    title: "Empathetic Reassurance & Recovery",
+    subtitle: "Providing a secure, non-judgmental environment to process traumatic events at your own pace.",
+    image: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1400&q=80",
+    fallbackImage: defaultHero,
+    badge: "Safe Healing Sanctuary",
+    icon: ShieldCheck,
+    accentColor: "from-indigo-500 to-purple-800",
   },
   {
     id: 4,
-    title: "Holistic Wellness Insights",
-    subtitle: "Comprehensive feedback and tailored coping strategies generated for your situation.",
-    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1200&q=80",
-    badge: "Guided Recovery",
-    icon: Sparkles,
-    accentColor: "from-cyan-500 to-blue-700",
-    bgGradient: "linear-gradient(135deg, rgba(6, 182, 212, 0.85), rgba(3, 105, 161, 0.95))"
+    title: "Personalized Trauma Guidance",
+    subtitle: "Immediate risk summary, grounding routines, and actionable follow-up plans for healthcare responders.",
+    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1400&q=80",
+    fallbackImage: secondaryHero,
+    badge: "Clinical Action Plans",
+    icon: Stethoscope,
+    accentColor: "from-blue-600 to-teal-700",
   }
 ];
 
@@ -71,7 +71,7 @@ export default function ImageSlider({ onActionClick }) {
     if (isPaused) return;
     const interval = setInterval(() => {
       handleNext();
-    }, 5500);
+    }, 6000);
     return () => clearInterval(interval);
   }, [isPaused, handleNext]);
 
@@ -79,25 +79,25 @@ export default function ImageSlider({ onActionClick }) {
     initial: (dir) => ({
       x: dir > 0 ? "100%" : "-100%",
       opacity: 0,
-      scale: 0.95
+      scale: 0.96
     }),
     animate: {
       x: 0,
       opacity: 1,
       scale: 1,
       transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.4 },
-        scale: { duration: 0.4 }
+        x: { type: "spring", stiffness: 280, damping: 28 },
+        opacity: { duration: 0.45 },
+        scale: { duration: 0.45 }
       }
     },
     exit: (dir) => ({
       x: dir > 0 ? "-100%" : "100%",
       opacity: 0,
-      scale: 0.95,
+      scale: 0.96,
       transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.3 }
+        x: { type: "spring", stiffness: 280, damping: 28 },
+        opacity: { duration: 0.35 }
       }
     })
   };
@@ -127,8 +127,8 @@ export default function ImageSlider({ onActionClick }) {
               alt={currentSlide.title}
               className="slider-image"
               onError={(e) => {
-                // Fallback to secondary asset if unspash load issues occur
-                e.target.src = secondaryHero;
+                // Fallback to local hero asset if network images hit restrictions
+                e.target.src = currentSlide.fallbackImage;
               }}
             />
             <div className="slider-overlay" />
@@ -141,7 +141,7 @@ export default function ImageSlider({ onActionClick }) {
               transition={{ delay: 0.15, duration: 0.35 }}
               className="slider-badge"
             >
-              <IconComponent size={16} />
+              <IconComponent size={17} />
               <span>{currentSlide.badge}</span>
             </motion.div>
 
@@ -188,14 +188,14 @@ export default function ImageSlider({ onActionClick }) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Control Buttons */}
+      {/* Navigation Controls */}
       <button
         type="button"
         className="slider-nav-btn prev"
         onClick={handlePrev}
         aria-label="Previous slide"
       >
-        <ChevronLeft size={22} />
+        <ChevronLeft size={24} />
       </button>
 
       <button
@@ -204,10 +204,10 @@ export default function ImageSlider({ onActionClick }) {
         onClick={handleNext}
         aria-label="Next slide"
       >
-        <ChevronRight size={22} />
+        <ChevronRight size={24} />
       </button>
 
-      {/* Slide Indicators */}
+      {/* Pagination Indicators */}
       <div className="slider-indicators">
         {slides.map((slide, idx) => (
           <button
