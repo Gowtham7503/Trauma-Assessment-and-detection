@@ -46,9 +46,9 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         text: apiResponse.reply,
       };
       setMessages([...nextTranscript, botMessage]);
-    } catch {
+    } catch (requestError) {
       setMessages(nextTranscript);
-      setError("The counselling API is not responding. Please check the backend and Groq connection.");
+      setError(requestError.message || "The counselling API is not responding. Please check the backend and Groq connection.");
     } finally {
       setIsSending(false);
     }
@@ -82,8 +82,8 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         createdAt: new Date().toISOString(),
       });
       onNavigate("feedback");
-    } catch {
-      setError("The counselling API could not generate feedback. Please check the backend and Groq connection.");
+    } catch (requestError) {
+      setError(requestError.message || "The counselling API could not generate feedback. Please check the backend and Groq connection.");
     } finally {
       setIsFinishing(false);
     }

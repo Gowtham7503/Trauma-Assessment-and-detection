@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    current_app,
     request,
     jsonify
 )
@@ -100,7 +101,7 @@ def continue_chat():
             str(e)
         )
 
-        return jsonify({
+        response = {
 
             "success": False,
 
@@ -108,7 +109,12 @@ def continue_chat():
                 "Unable to generate "
                 "a chat response."
 
-        }), 500
+        }
+
+        if current_app.debug:
+            response["detail"] = str(e)
+
+        return jsonify(response), 500
 
 
 @chat_bp.route(
@@ -180,7 +186,7 @@ def chat_feedback():
             str(e)
         )
 
-        return jsonify({
+        response = {
 
             "success": False,
 
@@ -188,7 +194,12 @@ def chat_feedback():
                 "Unable to generate "
                 "chat feedback from the API."
 
-        }), 500
+        }
+
+        if current_app.debug:
+            response["detail"] = str(e)
+
+        return jsonify(response), 500
 
 
 @chat_bp.route(
@@ -256,7 +267,7 @@ def start_chat():
             str(e)
         )
 
-        return jsonify({
+        response = {
 
             "success": False,
 
@@ -264,4 +275,9 @@ def start_chat():
                 "Unable to process "
                 "the complaint."
 
-        }), 500
+        }
+
+        if current_app.debug:
+            response["detail"] = str(e)
+
+        return jsonify(response), 500
