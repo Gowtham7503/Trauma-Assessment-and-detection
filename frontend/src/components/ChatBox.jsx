@@ -12,6 +12,18 @@ const quickSuggestions = [
   "Experiencing sudden anxiety and tension",
 ];
 
+function buildSessionDetails(messages, createdAt) {
+  const userMessages = messages.filter((message) => message.sender === "user");
+  const assistantMessages = messages.filter((message) => message.sender !== "user");
+
+  return {
+    createdAt,
+    totalMessages: messages.length,
+    userResponses: userMessages.length,
+    assistantResponses: assistantMessages.length,
+  };
+}
+
 export default function ChatBox({ onFeedback, onNavigate }) {
   const { messages, addMessage, setMessages } = useChat();
   const [draft, setDraft] = useState("");
@@ -24,6 +36,28 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     : [{ id: 1, sender: "bot", text: openingQuestion }];
   const hasUserResponse = visibleMessages.some((message) => message.sender === "user");
 
+  const createFeedback = async (transcript) => {
+    const apiResponse = await apiRequest("/chat/feedback", {
+      method: "POST",
+      body: JSON.stringify({ messages: transcript }),
+    });
+    const createdAt = new Date().toISOString();
+
+    onFeedback({
+      ...apiResponse.feedback,
+      answers: transcript
+        .filter((message) => message.sender === "user")
+        .reduce((currentAnswers, message, index) => {
+          currentAnswers[`response${index + 1}`] = message.text;
+          return currentAnswers;
+        }, {}),
+      transcript,
+      sessionDetails: buildSessionDetails(transcript, createdAt),
+      createdAt,
+    });
+    onNavigate("feedback");
+  };
+
   const submitAnswer = async (answerText) => {
     const trimmed = answerText.trim();
     if (!trimmed || isSending || isFinishing) return;
@@ -34,6 +68,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     setDraft("");
     setError("");
     setIsSending(true);
+    let latestTranscript = nextTranscript;
 
     try {
       const apiResponse = await apiRequest("/chat/", {
@@ -45,9 +80,17 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         sender: "bot",
         text: apiResponse.reply,
       };
-      setMessages([...nextTranscript, botMessage]);
+      const completedTranscript = [...nextTranscript, botMessage];
+
+      latestTranscript = completedTranscript;
+      setMessages(completedTranscript);
+
+      if (apiResponse.readyForFeedback) {
+        setIsFinishing(true);
+        await createFeedback(completedTranscript);
+      }
     } catch (requestError) {
-      setMessages(nextTranscript);
+      setMessages(latestTranscript);
       setError(requestError.message || "The counselling API is not responding. Please check the backend and Groq connection.");
     } finally {
       setIsSending(false);
@@ -66,22 +109,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     setIsFinishing(true);
 
     try {
-      const apiResponse = await apiRequest("/chat/feedback", {
-        method: "POST",
-        body: JSON.stringify({ messages: visibleMessages }),
-      });
-
-      onFeedback({
-        ...apiResponse.feedback,
-        answers: visibleMessages
-          .filter((message) => message.sender === "user")
-          .reduce((currentAnswers, message, index) => {
-            currentAnswers[`response${index + 1}`] = message.text;
-            return currentAnswers;
-          }, {}),
-        createdAt: new Date().toISOString(),
-      });
-      onNavigate("feedback");
+      await createFeedback(visibleMessages);
     } catch (requestError) {
       setError(requestError.message || "The counselling API could not generate feedback. Please check the backend and Groq connection.");
     } finally {
@@ -160,7 +188,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           type="text"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder={isSending ? "Thinking..." : "Type your response..."}
+          placeholder={isFinishing ? "Preparing feedback..." : isSending ? "Thinking..." : "Type your response..."}
           aria-label="Type a message"
           disabled={isSending || isFinishing}
         />

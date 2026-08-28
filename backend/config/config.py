@@ -16,6 +16,11 @@ class Config:
         "llama-3.3-70b-versatile"
     )
 
+    GROQ_FALLBACK_MODEL = os.getenv(
+        "GROQ_FALLBACK_MODEL",
+        "llama-3.3-70b-versatile"
+    )
+
     GROQ_SSL_VERIFY = (
         os.getenv(
             "GROQ_SSL_VERIFY",

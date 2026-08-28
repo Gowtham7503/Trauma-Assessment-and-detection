@@ -21,7 +21,9 @@ from app.services.assessment_service import (
 
 from app.services.llm_service import (
     generate_chat_feedback,
-    generate_chat_reply
+    generate_chat_reply,
+    has_reached_question_limit,
+    is_feedback_ready_reply
 )
 
 
@@ -73,7 +75,16 @@ def continue_chat():
 
             "success": True,
 
-            "reply": reply
+            "reply": reply,
+
+            "readyForFeedback": (
+                has_reached_question_limit(
+                    messages
+                )
+                or is_feedback_ready_reply(
+                    reply
+                )
+            )
 
         }), 200
 

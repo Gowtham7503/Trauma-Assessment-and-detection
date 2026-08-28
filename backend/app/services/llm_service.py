@@ -2,7 +2,7 @@ import json
 
 import httpx
 
-from groq import Groq
+from groq import BadRequestError, Groq
 
 from config.config import Config
 
@@ -27,6 +27,124 @@ client = Groq(
         verify=Config.GROQ_SSL_VERIFY
     )
 )
+
+
+def is_gpt_oss_model(model):
+    return model.startswith(
+        "openai/gpt-oss"
+    )
+
+
+def is_qwen_model(model):
+    return model.startswith(
+        "qwen/"
+    )
+
+
+def build_completion_options(model):
+    options = {
+        "tool_choice": "none"
+    }
+
+    if is_gpt_oss_model(
+        model
+    ):
+        options.update({
+            "include_reasoning": False,
+            "reasoning_effort": "low"
+        })
+
+    if is_qwen_model(
+        model
+    ):
+        options["reasoning_format"] = "hidden"
+
+    return options
+
+
+def get_groq_error_code(error):
+    body = getattr(
+        error,
+        "body",
+        {}
+    )
+
+    if isinstance(
+        body,
+        dict
+    ):
+        error_body = body.get(
+            "error",
+            body
+        )
+
+        return error_body.get(
+            "code"
+        )
+
+    return None
+
+
+def is_retryable_generation_error(error):
+    error_code = get_groq_error_code(
+        error
+    )
+
+    if error_code in {
+        "tool_use_failed",
+        "output_parse_failed",
+        "json_validate_failed"
+    }:
+        return True
+
+    error_text = str(
+        error
+    )
+
+    return (
+        "tool_use_failed" in error_text
+        or "output_parse_failed" in error_text
+        or "json_validate_failed" in error_text
+    )
+
+
+def create_chat_completion(**kwargs):
+    model = kwargs.get(
+        "model",
+        Config.GROQ_MODEL
+    )
+
+    try:
+        return client.chat.completions.create(
+            **kwargs,
+            **build_completion_options(
+                model
+            )
+        )
+
+    except BadRequestError as error:
+        fallback_model = Config.GROQ_FALLBACK_MODEL
+
+        if (
+            is_retryable_generation_error(
+                error
+            )
+            and fallback_model
+            and fallback_model != model
+        ):
+            retry_kwargs = {
+                **kwargs,
+                "model": fallback_model
+            }
+
+            return client.chat.completions.create(
+                **retry_kwargs,
+                **build_completion_options(
+                    fallback_model
+                )
+            )
+
+        raise
 
 
 def normalize_messages(messages):
@@ -80,6 +198,24 @@ def has_reached_question_limit(messages):
     return count_assistant_questions(
         messages
     ) >= MAX_CONVERSATION_QUESTIONS
+
+
+def is_feedback_ready_reply(reply):
+    normalized_reply = reply.lower()
+
+    if "?" in normalized_reply:
+        return False
+
+    return any(
+        marker in normalized_reply
+        for marker in (
+            "prepare a brief screening summary",
+            "screening summary now",
+            "stop asking questions",
+            "feedback summary",
+            "feedback page",
+        )
+    )
 
 
 CONVERSATION_SYSTEM_PROMPT = """
@@ -164,7 +300,7 @@ def generate_chat_reply(messages):
         messages
     )
 
-    response = client.chat.completions.create(
+    response = create_chat_completion(
 
         model=Config.GROQ_MODEL,
 
@@ -200,27 +336,41 @@ def generate_chat_feedback(messages):
         messages
     )
 
-    feedback_prompt = f"""
-{CONVERSATION_SYSTEM_PROMPT}
+    feedback_prompt = """
+You are preparing supportive feedback for a trauma-screening prototype.
 
-The conversation is ending now. Based only on the user's messages in this conversation,
-prepare brief supportive feedback for a trauma-screening prototype.
+Use only the conversation messages provided by the user and assistant.
+Do not diagnose PTSD, trauma, depression, anxiety, or any other condition.
+Do not invent events, symptoms, relationships, causes, or risks.
+Do not ask another question.
+Do not include markdown, headings, or prose outside the JSON object.
 
-Do not diagnose. Do not invent details. Do not use scripted recommendations.
-Return ONLY valid JSON with this structure:
+Return ONLY valid JSON with this exact structure:
 
-{{
-    "summary": "short plain-language summary of what the user shared",
+{
+    "summary": "detailed plain-language summary of the session in 3 to 5 sentences",
     "riskLevel": "Low | Moderate | High | Unclear",
+    "reportedConcerns": [
+        "specific concern the user reported"
+    ],
+    "possibleImpacts": [
+        "possible impact on sleep, routine, relationships, work, school, body, or emotions"
+    ],
+    "safetyNotes": "brief safety summary based only on the conversation",
+    "copingAndSupport": "brief note about coping methods, supports, and follow-up needs mentioned or reasonably suggested",
     "recommendations": [
+        "supportive next step based on the conversation",
         "supportive next step based on the conversation",
         "supportive next step based on the conversation"
     ],
+    "nextSteps": [
+        "clear practical next step for the user"
+    ],
     "backendReply": "one brief closing counselling-style response"
-}}
+}
 """
 
-    response = client.chat.completions.create(
+    response = create_chat_completion(
 
         model=Config.GROQ_MODEL,
 
@@ -351,7 +501,7 @@ Generate the relevant follow-up
 assessment questions.
 """
 
-    response = client.chat.completions.create(
+    response = create_chat_completion(
 
         model=Config.GROQ_MODEL,
 
@@ -483,7 +633,7 @@ USER ANSWERS:
 Generate the final assessment.
 """
 
-    response = client.chat.completions.create(
+    response = create_chat_completion(
 
         model=Config.GROQ_MODEL,
 
