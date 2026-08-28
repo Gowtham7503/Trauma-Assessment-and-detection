@@ -7,7 +7,7 @@ import Feedback from "./pages/Feedback.jsx";
 
 const views = [
   { id: "home", label: "Overview", component: Home },
-  { id: "chat", label: "Trauma Assessment", component: Chat },
+  { id: "chat", label: "Stress/Trauma Assessment", component: Chat },
   { id: "feedback", label: "Feedback", component: Feedback },
 ];
 
