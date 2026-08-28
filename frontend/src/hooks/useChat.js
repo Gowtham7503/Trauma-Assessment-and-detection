@@ -8,6 +8,5 @@ export function useChat() {
     setMessages((currentMessages) => [...currentMessages, message]);
   }
 
-  return { messages, addMessage };
+  return { messages, addMessage, setMessages };
 }
-

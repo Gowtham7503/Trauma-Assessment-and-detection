@@ -1,3 +1,22 @@
+import json
+
+from app.database.mongodb import (
+    assessments_collection
+)
+
+from app.services.llm_service import (
+    generate_questions,
+    generate_final_assessment
+)
+
+from app.services.safety_service import (
+    basic_safety_screen
+)
+
+from app.utils.pii_masking import (
+    mask_pii
+)
+
 from datetime import datetime, timezone
 
 from pymongo.errors import DuplicateKeyError
@@ -262,6 +281,7 @@ def complete_assessment(
     # 7. Return result
     # ----------------------------------------------
 
+    return result
     return result
 def create_assessment(
     session_id,
