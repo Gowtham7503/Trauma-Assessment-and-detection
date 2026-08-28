@@ -1,3 +1,38 @@
-def assessment_document(case_id, risk_level, score):
-    return {"case_id": case_id, "risk_level": risk_level, "score": score}
+from datetime import datetime, timezone
+from bson import ObjectId
 
+
+def create_assessment_document(
+    session_id,
+    complaint,
+    questions=None,
+    answers=None,
+):
+    now = datetime.now(timezone.utc)
+
+    return {
+        "session_id": session_id,
+        "complaint": complaint,
+        "questions": questions or [],
+        "answers": answers or [],
+        "result": None,
+        "status": "questions_generated",
+        "created_at": now,
+        "updated_at": now,
+    }
+
+
+def serialize_assessment(document):
+    if not document:
+        return None
+
+    result = dict(document)
+
+    if isinstance(result.get("_id"), ObjectId):
+        result["_id"] = str(result["_id"])
+
+    for field in ("created_at", "updated_at"):
+        if field in result and hasattr(result[field], "isoformat"):
+            result[field] = result[field].isoformat()
+
+    return result
