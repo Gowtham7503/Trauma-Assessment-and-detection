@@ -1030,7 +1030,87 @@ button {
   margin: 0.5rem 0 1rem;
   font-family: 'Outfit', sans-serif;
   color: var(--bg-deep);
-  font-size: 1.75rem;
+  font-size: 1.45rem;
+  line-height: 1.3;
+}
+
+.summary-report {
+  margin: 0.85rem 0 0;
+  color: #334155;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.75;
+  max-width: 72ch;
+}
+
+.summary-note {
+  margin: 0.85rem 0 0;
+  color: #64748b;
+  font-size: 0.94rem;
+  line-height: 1.65;
+}
+
+.level-meter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: 1.4rem;
+}
+
+.level-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.level-meter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.level-meter-header strong {
+  color: var(--bg-deep);
+  font-size: 0.95rem;
+}
+
+.level-meter-track {
+  width: 100%;
+  height: 0.8rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.level-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.45s ease;
+}
+
+.level-meter-fill.low {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.level-meter-fill.moderate {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.level-meter-fill.high {
+  background: linear-gradient(90deg, #f43f5e, #fb7185);
+}
+
+.level-meter-fill.unclear {
+  background: linear-gradient(90deg, #64748b, #94a3b8);
+}
+
+.level-meter-fill.notPrimary {
+  background: linear-gradient(90deg, #cbd5e1, #94a3b8);
 }
 
 .risk-pill {

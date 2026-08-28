@@ -1,22 +1,20 @@
 import { useEffect, useState } from "react";
 
+const CHAT_STORAGE_KEY = "trauma-assessment-chat";
+
 const initialBotMessage = {
   id: 1,
   sender: "bot",
-  text: "What experience or situation would you like support with today?"
+  text: "Which area should we focus on first: current stress, a trauma-related experience, or both?",
 };
-
-export function useChat() {
-  const [messages, setMessages] = useState([initialBotMessage]);
-const CHAT_STORAGE_KEY = "trauma-assessment-chat";
 
 export function useChat() {
   const [messages, setMessages] = useState(() => {
     try {
       const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
-      return savedMessages ? JSON.parse(savedMessages) : [];
+      return savedMessages ? JSON.parse(savedMessages) : [initialBotMessage];
     } catch {
-      return [];
+      return [initialBotMessage];
     }
   });
 
@@ -37,5 +35,4 @@ export function useChat() {
   }
 
   return { messages, addMessage, resetMessages, setMessages };
-  return { messages, addMessage, setMessages };
 }

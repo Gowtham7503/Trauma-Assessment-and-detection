@@ -10,9 +10,9 @@ export default function Chat({ onFeedback, onNavigate }) {
             <ShieldCheck size={16} />
             <span>Confidential Assessment</span>
           </div>
-          <h1 style={{ marginTop: "0.5rem" }}>Trauma Assessment</h1>
+          <h1 style={{ marginTop: "0.5rem" }}>Stress & Trauma Assessment</h1>
           <p className="lead">
-            The chat follows each response with focused trauma-screening questions and prepares
+            The chat routes you into focused stress or trauma screening questions and prepares
             feedback when you finish.
           </p>
         </div>

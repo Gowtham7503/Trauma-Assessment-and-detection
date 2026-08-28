@@ -1,4 +1,4 @@
-import { ShieldCheck, CheckCircle2, FileText, ArrowRight, AlertTriangle, Wind } from "lucide-react";
+import { ShieldCheck, CheckCircle2, FileText, ArrowRight, AlertTriangle } from "lucide-react";
 import BreathingTool from "../components/BreathingTool";
 
 function ResultList({ items }) {
@@ -18,6 +18,89 @@ function ResultList({ items }) {
   );
 }
 
+function normalizeAssessmentPath(path) {
+  const normalizedPath = String(path || "").toLowerCase();
+
+  if (normalizedPath.includes("combined") || normalizedPath.includes("both")) {
+    return "combined";
+  }
+
+  if (normalizedPath.includes("trauma")) {
+    return "trauma";
+  }
+
+  if (normalizedPath.includes("stress")) {
+    return "stress";
+  }
+
+  return "combined";
+}
+
+function normalizeLevel(level) {
+  const normalizedLevel = String(level || "Unclear").toLowerCase();
+
+  if (normalizedLevel.includes("not primary")) {
+    return "notPrimary";
+  }
+
+  if (normalizedLevel.includes("high")) {
+    return "high";
+  }
+
+  if (normalizedLevel.includes("moderate")) {
+    return "moderate";
+  }
+
+  if (normalizedLevel.includes("low")) {
+    return "low";
+  }
+
+  return "unclear";
+}
+
+function levelLabel(level) {
+  const labels = {
+    low: "Low",
+    moderate: "Moderate",
+    high: "High",
+    unclear: "Unclear",
+    notPrimary: "Not primary",
+  };
+
+  return labels[normalizeLevel(level)];
+}
+
+function levelPercent(level) {
+  const values = {
+    low: 30,
+    moderate: 62,
+    high: 92,
+    unclear: 48,
+    notPrimary: 16,
+  };
+
+  return values[normalizeLevel(level)];
+}
+
+function LevelBar({ label, level }) {
+  const normalizedLevel = normalizeLevel(level);
+
+  return (
+    <div className="level-meter">
+      <div className="level-meter-header">
+        <span>{label}</span>
+        <strong>{levelLabel(level)}</strong>
+      </div>
+      <div className="level-meter-track" aria-label={`${label}: ${levelLabel(level)}`}>
+        <div
+          className={`level-meter-fill ${normalizedLevel}`}
+          style={{ width: `${levelPercent(level)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Feedback({ feedback, onNavigate }) {
   if (!feedback) {
     return (
@@ -28,7 +111,7 @@ export default function Feedback({ feedback, onNavigate }) {
         </div>
         <h1 style={{ marginTop: "0.5rem" }}>No Feedback Generated Yet</h1>
         <p className="lead">
-          Please complete the 3-step Trauma & Stress Assessment first. Your summarized risk priority and personalized recommendations will appear here automatically.
+          Please complete the stress and trauma assessment first. Your summarized risk priority and personalized recommendations will appear here automatically.
         </p>
         <button
           type="button"
@@ -49,6 +132,15 @@ export default function Feedback({ feedback, onNavigate }) {
 
   const riskLevel = feedback.riskLevel || "Unclear";
   const isHigh = riskLevel.toLowerCase() === "high";
+  const pathLabels = {
+    stress: "Stress",
+    trauma: "Trauma",
+    combined: "Stress and Trauma",
+  };
+  const normalizedPath = normalizeAssessmentPath(feedback.assessmentPath);
+  const assessmentPath = pathLabels[normalizedPath];
+  const stressLevel = feedback.stressLevel || (normalizedPath === "trauma" ? "Not primary" : riskLevel);
+  const traumaImpact = feedback.traumaImpact || (normalizedPath === "stress" ? "Not primary" : riskLevel);
 
   return (
     <section className="feedback-panel">
@@ -60,7 +152,7 @@ export default function Feedback({ feedback, onNavigate }) {
           </div>
           <h1 style={{ marginTop: "0.5rem" }}>Assessment Feedback & Care Plan</h1>
           <p className="lead">
-            Review your responses, estimated stress/risk priority level, and suggested immediate coping steps.
+            Review your responses, assessment path, estimated priority level, and suggested immediate coping steps.
           </p>
         </div>
         <span className={`risk-pill ${riskLevel.toLowerCase()}`}>
@@ -72,22 +164,17 @@ export default function Feedback({ feedback, onNavigate }) {
       <div className="feedback-grid">
         <article className="feedback-card feedback-card--red">
           <p className="eyebrow">Support Summary</p>
-          <h2>{feedback.summary}</h2>
-          <p style={{ marginTop: "0.5rem", color: "#64748b" }}>{feedback.backendReply}</p>
+          <p className="summary-report">{feedback.summary}</p>
+          <p className="summary-note">{feedback.backendReply}</p>
         </article>
 
         <article className="feedback-card">
-          <p className="eyebrow">Suggested Action Steps & Stress Relief</p>
-          <ul className="check-list">
-            {feedback.recommendations.map((item) => (
-              <li key={item} className="check-item">
-                <CheckCircle2 size={18} className="check-icon" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="eyebrow">Reported Concerns</p>
-          <ResultList items={feedback.reportedConcerns} />
+          <p className="eyebrow">Assessment Path</p>
+          <h2>{assessmentPath}</h2>
+          <div className="level-meter-group">
+            <LevelBar label="Stress Level" level={stressLevel} />
+            <LevelBar label="Trauma Impact" level={traumaImpact} />
+          </div>
         </article>
 
         <article className="feedback-card">
@@ -110,7 +197,12 @@ export default function Feedback({ feedback, onNavigate }) {
         </article>
 
         <article className="feedback-card">
-          <p className="eyebrow">Suggested Action Steps</p>
+          <p className="eyebrow">Reported Concerns</p>
+          <ResultList items={feedback.reportedConcerns} />
+        </article>
+
+        <article className="feedback-card">
+          <p className="eyebrow">Suggested Action Steps & Stress Relief</p>
           <ResultList items={feedback.recommendations} />
         </article>
 
@@ -125,21 +217,9 @@ export default function Feedback({ feedback, onNavigate }) {
             <span>Submitted Responses</span>
           </p>
           <dl className="detail-list">
-            <div className="detail-row">
-              <dt>Situation / Stress Factor:</dt>
-              <dd>{feedback.answers.experience}</dd>
-            </div>
-            <div className="detail-row">
-              <dt>Current Emotional/Physical Impact:</dt>
-              <dd>{feedback.answers.feeling}</dd>
-            </div>
-            <div className="detail-row">
-              <dt>Helpful Support Needed:</dt>
-              <dd>{feedback.answers.support}</dd>
-            </div>
-            {Object.entries(feedback.answers).map(([key, value], index) => (
+            {Object.entries(feedback.answers || {}).map(([key, value], index) => (
               <div key={key} className="detail-row">
-                <dt>Response {index + 1}</dt>
+                <dt>{key.startsWith("response") ? `Response ${index + 1}` : key}</dt>
                 <dd>{value}</dd>
               </div>
             ))}
