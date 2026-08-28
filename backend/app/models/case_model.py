@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from bson import ObjectId
 
 
 def create_case_document(
@@ -23,9 +22,6 @@ def serialize_case(document):
         return None
 
     result = dict(document)
-
-    if isinstance(result.get("_id"), ObjectId):
-        result["_id"] = str(result["_id"])
 
     for field in ("created_at", "updated_at"):
         if field in result and hasattr(result[field], "isoformat"):

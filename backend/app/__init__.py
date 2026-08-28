@@ -19,23 +19,7 @@ def create_app():
         Config
     )
 
-    CORS(
-
-        app,
-
-        resources={
-
-            r"/api/*": {
-
-                "origins":
-                    [
-                        Config.FRONTEND_URL
-                    ]
-            }
-
-        }
-
-    )
+    CORS(app)
 
     register_routes(
         app

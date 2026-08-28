@@ -29,16 +29,6 @@ class Config:
         == "true"
     )
 
-    MONGODB_URI = os.getenv(
-        "MONGODB_URI",
-        "mongodb://localhost:27017"
-    )
-
-    MONGODB_DATABASE = os.getenv(
-        "MONGODB_DATABASE",
-        "nhaa_trauma_assessment"
-    )
-
     PORT = int(
         os.getenv(
             "PORT",

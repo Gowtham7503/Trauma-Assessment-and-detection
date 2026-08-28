@@ -3,8 +3,8 @@ from flask import (
     jsonify
 )
 
-from app.database.mongodb import (
-    assessments_collection
+from app.services.assessment_service import (
+    get_assessment
 )
 
 
@@ -23,20 +23,7 @@ def get_case(
     session_id
 ):
 
-    assessment = (
-        assessments_collection.find_one(
-
-            {
-                "session_id":
-                    session_id
-            },
-
-            {
-                "_id": 0
-            }
-
-        )
-    )
+    assessment = get_assessment(session_id)
 
     if not assessment:
 
