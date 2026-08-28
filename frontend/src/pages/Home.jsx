@@ -1,10 +1,9 @@
-import RiskCard from "../components/RiskCard.jsx";
-import StressMeter from "../components/StressMeter.jsx";
+import heroImage from "../assets/trauma-support-hero.png";
 
 const quickStats = [
-  { label: "Open cases", value: "18" },
-  { label: "High-risk alerts", value: "4" },
-  { label: "Response time", value: "12 min" },
+  { label: "Step 1", value: "Overview" },
+  { label: "Step 2", value: "Chat" },
+  { label: "Step 3", value: "Feedback" },
 ];
 
 export default function Home({ onNavigate }) {
@@ -13,25 +12,24 @@ export default function Home({ onNavigate }) {
       <section className="hero-panel">
         <div className="hero-copy">
           <p className="eyebrow accent">Trauma-informed care</p>
-          <h1>Clinical support without losing the human connection.</h1>
+          <h1>Trauma assessment support that starts gently.</h1>
           <p className="lead">
-            Review risk indicators, respond with empathy, and coordinate care for each person
-            with a clear, structured assessment flow.
+            Begin with a calm overview, continue through a guided chat, and review feedback
+            shaped from the person&apos;s own inputs.
           </p>
           <div className="hero-actions">
-            <button type="button" className="primary-btn" onClick={() => onNavigate("assessment")}>
-              Start assessment
+            <button type="button" className="primary-btn" onClick={() => onNavigate("chat")}>
+              Start chat
             </button>
-            <button type="button" className="secondary-btn" onClick={() => onNavigate("dashboard")}>
-              View dashboard
+            <button type="button" className="secondary-btn" onClick={() => onNavigate("feedback")}>
+              View feedback
             </button>
           </div>
         </div>
 
-        <div className="hero-side">
-          <RiskCard risk="Moderate" score={6} highlight />
-          <StressMeter value={62} label="Current stress signal" />
-        </div>
+        <figure className="hero-image-wrap">
+          <img src={heroImage} alt="A calm trauma support conversation in a counseling room" />
+        </figure>
       </section>
 
       <section className="stats-grid">
@@ -45,19 +43,18 @@ export default function Home({ onNavigate }) {
 
       <section className="feature-grid">
         <article className="info-card">
-          <h3>Assessment flow</h3>
-          <p>Track symptoms, triggers, and coping signals across a trauma-informed checklist.</p>
+          <h3>Gentle first contact</h3>
+          <p>Set a safe tone before asking personal questions or collecting sensitive details.</p>
         </article>
         <article className="info-card">
-          <h3>Safety monitoring</h3>
-          <p>Surface urgent concerns early while preserving privacy and respectful language.</p>
+          <h3>Guided conversation</h3>
+          <p>Gather what happened, how the person feels now, and what kind of support they need.</p>
         </article>
         <article className="info-card">
-          <h3>Care coordination</h3>
-          <p>Share notes and updates with clinicians, advocates, and support teams in one place.</p>
+          <h3>Clear feedback</h3>
+          <p>Show risk priority, a short summary, and suggested next steps on the feedback page.</p>
         </article>
       </section>
     </>
   );
 }
-

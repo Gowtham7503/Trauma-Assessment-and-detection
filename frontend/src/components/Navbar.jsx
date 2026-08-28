@@ -1,12 +1,4 @@
-export default function Navbar({ activeView, setActiveView }) {
-  const navigation = [
-    { id: "home", label: "Overview" },
-    { id: "assessment", label: "Assessment" },
-    { id: "dashboard", label: "Dashboard" },
-    { id: "chat", label: "Chat" },
-    { id: "case", label: "Case" },
-  ];
-
+export default function Navbar({ activeView, setActiveView, views }) {
   return (
     <header className="topbar">
       <div className="brand-wrap">
@@ -18,7 +10,7 @@ export default function Navbar({ activeView, setActiveView }) {
       </div>
 
       <nav className="nav" aria-label="Main navigation">
-        {navigation.map((item) => (
+        {views.map((item) => (
           <button
             key={item.id}
             type="button"
@@ -32,4 +24,3 @@ export default function Navbar({ activeView, setActiveView }) {
     </header>
   );
 }
-
