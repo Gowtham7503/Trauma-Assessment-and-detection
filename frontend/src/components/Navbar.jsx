@@ -22,8 +22,8 @@ export default function Navbar({ activeView, setActiveView, views }) {
           <HeartPulse size={24} />
         </div>
         <div>
-          <p className="eyebrow">NHAA CARE</p>
-          <h2>Trauma Support</h2>
+          <p className="eyebrow">MENTAL WELLNESS</p>
+          <h2>MindAssess</h2>
         </div>
       </div>
 

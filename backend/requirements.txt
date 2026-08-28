@@ -1,8 +1,9 @@
 Flask
 flask-cors
-pymongo
+pymongo[srv]
 python-dotenv
 groq
+httpx
 pydantic
 gunicorn
 pytest

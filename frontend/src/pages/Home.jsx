@@ -228,7 +228,7 @@ export default function Home({ onNavigate }) {
       {/* Centered High-Impact Bottom Call To Action Banner */}
       <section className="cta-banner">
         <div className="cta-content">
-          <h2>Ready for Your Stress & Trauma Assessment?</h2>
+          <h2>Ready for Your MindAssess Check-In?</h2>
           <p>
             Take the first step toward understanding your current support needs in a completely safe, private environment.
           </p>

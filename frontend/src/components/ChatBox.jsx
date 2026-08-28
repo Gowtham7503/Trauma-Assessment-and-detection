@@ -1,132 +1,146 @@
-import { useState } from "react";
-import { HeartPulse, Loader2, RefreshCw, Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { HeartPulse, Loader2, Mic, RefreshCw, Send } from "lucide-react";
 import { useChat } from "../hooks/useChat.js";
 import { apiRequest } from "../services/api.js";
 import Message from "./Message.jsx";
 
-const pathPrompt = {
-  key: "concernType",
-  text: "Which area should we focus on first: current stress, a trauma-related experience, or both?",
+const initialPrompt = {
+  key: "overview",
+  text: "What made you seek support today? You can describe stress, a trauma-related experience, or both in your own words.",
   suggestions: [
-    "Mostly current stress and burnout",
-    "Mostly trauma-related memories or reactions",
-    "Both stress and trauma feel connected",
+    "I feel stressed and overwhelmed",
+    "I am struggling after something that happened",
+    "Stress and past experiences both affect me",
   ],
 };
 
-const pathPrompts = {
-  stress: [
-    {
-      key: "stressSource",
-      text: "What is the main source of stress affecting you right now?",
-      suggestions: [
-        "Work, academic, or deadline pressure",
-        "Family, relationship, or caregiving pressure",
-        "Money, health, or major life changes",
-      ],
-    },
-    {
-      key: "stressImpact",
-      text: "How is this stress showing up in your body, mood, sleep, or daily routine?",
-      suggestions: [
-        "Tension, headaches, and fast heart rate",
-        "Poor sleep, irritability, and low focus",
-        "Feeling overwhelmed, exhausted, or burned out",
-      ],
-    },
-    {
-      key: "stressSupport",
-      text: "What kind of stress support would feel most useful next?",
-      suggestions: [
-        "A calming routine I can use today",
-        "A plan to reduce overload and triggers",
-        "Guidance on when to seek professional support",
-      ],
-    },
-  ],
-  trauma: [
-    {
-      key: "traumaExperience",
-      text: "What trauma-related experience or memory would you like support with today?",
-      suggestions: [
-        "Struggling with memories of a past event",
-        "Feeling unsafe or constantly on edge after something happened",
-        "Avoiding reminders because they feel overwhelming",
-      ],
-    },
-    {
-      key: "traumaReactions",
-      text: "What reactions are you noticing now, such as nightmares, flashbacks, numbness, fear, or body tension?",
-      suggestions: [
-        "Intrusive memories, nightmares, or flashbacks",
-        "Numbness, guilt, shame, fear, or anger",
-        "Being jumpy, watchful, tense, or easily startled",
-      ],
-    },
-    {
-      key: "traumaSupport",
-      text: "What kind of trauma support would feel most helpful next?",
-      suggestions: [
-        "Grounding steps for intense moments",
-        "Understanding my trauma impact priority",
-        "Action steps for professional trauma-informed care",
-      ],
-    },
-  ],
-  combined: [
-    {
-      key: "combinedSource",
-      text: "What feels most connected for you right now: the stress load, the trauma reaction, or how they affect each other?",
-      suggestions: [
-        "Stress is making trauma reactions stronger",
-        "Trauma reactions are making daily stress harder",
-        "Both are affecting sleep, focus, and relationships",
-      ],
-    },
-    {
-      key: "combinedImpact",
-      text: "How are stress and trauma symptoms affecting your body, emotions, sleep, work, school, or relationships?",
-      suggestions: [
-        "Overwhelmed, tense, and constantly alert",
-        "Poor sleep plus intrusive memories or worry",
-        "Avoidance, exhaustion, and trouble functioning",
-      ],
-    },
-    {
-      key: "combinedSupport",
-      text: "What support would help most: stress reduction, trauma grounding, safety planning, or professional follow-up?",
-      suggestions: [
-        "Stress reduction and grounding exercises",
-        "A clear care plan for both stress and trauma",
-        "Professional follow-up and safety guidance",
-      ],
-    },
-  ],
+const assessmentPrompts = {
+  safety: {
+    key: "safety",
+    text: "Before we continue, do you feel safe right now, or is there any immediate risk of harm to you or someone else?",
+    suggestions: [
+      "I am safe right now",
+      "I feel unsafe and need help",
+      "I am not sure if I am safe",
+    ],
+  },
+  stressSymptoms: {
+    key: "stressSymptoms",
+    text: "How is stress showing up for you right now, such as sleep, focus, tension, mood, panic, exhaustion, or daily routine?",
+    suggestions: [
+      "Poor sleep, irritability, and low focus",
+      "Tension, headaches, and fast heart rate",
+      "Overwhelmed, exhausted, or burned out",
+    ],
+  },
+  stressSource: {
+    key: "stressSource",
+    text: "What seems to be the main source of your current stress or pressure?",
+    suggestions: [
+      "Work, academic, or deadline pressure",
+      "Family, relationship, or caregiving pressure",
+      "Money, health, or major life changes",
+    ],
+  },
+  traumaExperience: {
+    key: "traumaExperience",
+    text: "Has any frightening, harmful, or upsetting experience been affecting you recently or coming back into your mind?",
+    suggestions: [
+      "Yes, memories of an event keep coming back",
+      "I avoid reminders because they feel overwhelming",
+      "No trauma-related experience is affecting me now",
+    ],
+  },
+  traumaReactions: {
+    key: "traumaReactions",
+    text: "Are you noticing trauma-related reactions like intrusive memories, nightmares, flashbacks, numbness, guilt, fear, anger, being on edge, or avoiding reminders?",
+    suggestions: [
+      "Intrusive memories, nightmares, or flashbacks",
+      "Numbness, guilt, fear, anger, or shame",
+      "Being alert, jumpy, tense, or avoidant",
+    ],
+  },
+  functioning: {
+    key: "functioning",
+    text: "How are these stress or trauma reactions affecting your work, school, relationships, self-care, sleep, or responsibilities?",
+    suggestions: [
+      "It is affecting sleep and concentration",
+      "It is affecting work, school, or responsibilities",
+      "It is affecting relationships or self-care",
+    ],
+  },
+  duration: {
+    key: "duration",
+    text: "How long has this been going on, and how often does it affect you?",
+    suggestions: [
+      "A few days or weeks",
+      "Several weeks or months",
+      "It happens often or most days",
+    ],
+  },
+  support: {
+    key: "support",
+    text: "What support would help most next: stress reduction, trauma grounding, safety planning, or professional follow-up?",
+    suggestions: [
+      "Stress reduction and calming exercises",
+      "Trauma grounding and coping steps",
+      "Professional follow-up or safety guidance",
+    ],
+  },
 };
 
-function classifyAssessmentPath(answerText) {
-  const normalizedAnswer = answerText.toLowerCase();
-  const traumaTerms = ["trauma", "memories", "flashback", "nightmare", "unsafe", "event", "reminder", "avoid"];
-  const stressTerms = ["stress", "burnout", "work", "academic", "deadline", "pressure", "overload", "exhausted"];
-  const hasTrauma = traumaTerms.some((term) => normalizedAnswer.includes(term));
-  const hasStress = stressTerms.some((term) => normalizedAnswer.includes(term));
+const promptOrder = [
+  "safety",
+  "stressSymptoms",
+  "stressSource",
+  "traumaExperience",
+  "traumaReactions",
+  "functioning",
+  "duration",
+  "support",
+];
 
-  if (normalizedAnswer.includes("both") || (hasStress && hasTrauma)) {
-    return "combined";
-  }
+const safetyTerms = ["unsafe", "danger", "suicide", "self harm", "hurt myself", "hurt someone", "harm", "abuse", "threat"];
+const traumaTerms = ["trauma", "memories", "memory", "incident", "flashback", "nightmare", "unsafe", "event", "reminder", "avoid", "avoiding", "attacked", "attack", "assault", "abuse", "violence", "scared", "fear", "guilt", "shame", "numb", "startle", "footsteps"];
+const stressTerms = ["stress", "stressed", "burnout", "work", "academic", "deadline", "pressure", "overload", "exhausted", "tension", "sleep", "irritable", "worry", "panic", "focus"];
+const noTraumaTerms = ["no trauma", "not trauma", "no traumatic", "nothing happened"];
 
-  if (hasTrauma) {
-    return "trauma";
-  }
+function hasAnyTerm(text, terms) {
+  const normalizedText = text.toLowerCase();
 
-  return "stress";
+  return terms.some((term) => normalizedText.includes(term));
 }
 
-function getPromptSequence(assessmentPath) {
-  return [
-    pathPrompt,
-    ...(pathPrompts[assessmentPath] || pathPrompts.stress),
-  ];
+function detectSignals(answerText) {
+  const normalizedAnswer = answerText.toLowerCase();
+
+  return {
+    hasSafetyConcern: hasAnyTerm(normalizedAnswer, safetyTerms),
+    hasStress: hasAnyTerm(normalizedAnswer, stressTerms),
+    hasTrauma: hasAnyTerm(normalizedAnswer, traumaTerms) && !hasAnyTerm(normalizedAnswer, noTraumaTerms),
+  };
+}
+
+function chooseNextPrompt(currentAnswers, latestAnswer) {
+  const signals = detectSignals(latestAnswer);
+
+  if (signals.hasSafetyConcern && !currentAnswers.safety) {
+    return assessmentPrompts.safety;
+  }
+
+  if (signals.hasTrauma && !currentAnswers.traumaReactions) {
+    return currentAnswers.overview || currentAnswers.traumaExperience
+      ? assessmentPrompts.traumaReactions
+      : assessmentPrompts.traumaExperience;
+  }
+
+  if (signals.hasStress && !currentAnswers.stressSymptoms) {
+    return assessmentPrompts.stressSymptoms;
+  }
+
+  const nextPromptKey = promptOrder.find((promptKey) => !currentAnswers[promptKey]);
+
+  return nextPromptKey ? assessmentPrompts[nextPromptKey] : null;
 }
 
 function buildSessionDetails(messages, createdAt) {
@@ -142,37 +156,48 @@ function buildSessionDetails(messages, createdAt) {
 }
 
 function answersFromTranscript(transcript) {
-  const firstUserMessage = transcript.find((message) => message.sender === "user");
-  const assessmentPath = firstUserMessage
-    ? classifyAssessmentPath(firstUserMessage.text)
-    : "stress";
-  const promptSequence = getPromptSequence(assessmentPath);
-
   return transcript
     .filter((message) => message.sender === "user")
     .reduce((currentAnswers, message, index) => {
-      const promptKey = promptSequence[index]?.key || `response${index + 1}`;
+      const promptKey = message.promptKey || [initialPrompt.key, ...promptOrder][index] || `response${index + 1}`;
       currentAnswers[promptKey] = message.text;
       return currentAnswers;
     }, {});
 }
 
-function buildFallbackFeedback(answers, assessmentPath) {
+function levelFromTerms(text, highTerms, moderateTerms) {
+  const normalizedText = text.toLowerCase();
+  const isHigh = highTerms.some((term) => normalizedText.includes(term));
+  const isModerate = moderateTerms.some((term) => normalizedText.includes(term));
+
+  return isHigh ? "High" : isModerate ? "Moderate" : "Low";
+}
+
+function buildFallbackFeedback(answers) {
   const pathLabels = {
     stress: "Stress",
     trauma: "Trauma",
     combined: "Stress and Trauma",
   };
-  const activePath = pathLabels[assessmentPath] ? assessmentPath : "stress";
   const safeAnswers = {
     ...answers,
   };
+  const activePath = "combined";
   const combinedText = Object.values(safeAnswers).join(" ").toLowerCase();
-  const urgentTerms = ["unsafe", "suicide", "self harm", "hurt myself", "danger", "panic", "flashback", "nightmare", "severe", "exhausted", "burnout"];
-  const moderateTerms = ["fear", "anxiety", "memories", "stress", "tension", "headaches", "work", "overwhelmed", "alone", "numb", "detached"];
-  const isHigh = urgentTerms.some((term) => combinedText.includes(term));
-  const isModerate = moderateTerms.some((term) => combinedText.includes(term));
-  const riskLevel = isHigh ? "High" : isModerate ? "Moderate" : "Low";
+  const urgentTerms = ["unsafe", "suicide", "self harm", "hurt myself", "danger", "attacked", "assault", "panic", "flashback", "nightmare", "severe", "exhausted", "burnout"];
+  const moderateTerms = ["scared", "fear", "anxiety", "memories", "incident", "avoid", "stress", "tension", "headaches", "work", "overwhelmed", "alone", "numb", "detached"];
+  const riskLevel = levelFromTerms(combinedText, urgentTerms, moderateTerms);
+  const isHigh = riskLevel === "High";
+  const stressLevel = levelFromTerms(
+    [safeAnswers.overview, safeAnswers.stressSymptoms, safeAnswers.stressSource, safeAnswers.functioning].join(" "),
+    ["panic", "severe", "exhausted", "burnout", "unable", "most days"],
+    ["stress", "stressed", "pressure", "overwhelmed", "tension", "headaches", "sleep", "work", "worry"]
+  );
+  const traumaImpact = levelFromTerms(
+    [safeAnswers.overview, safeAnswers.traumaExperience, safeAnswers.traumaReactions, safeAnswers.functioning].join(" "),
+    ["unsafe", "attacked", "assault", "flashback", "nightmare", "danger", "severe", "most days"],
+    ["trauma", "memories", "incident", "avoid", "scared", "fear", "numb", "guilt", "shame", "edge", "startle", "footsteps"]
+  );
 
   const recommendations = {
     High: [
@@ -203,8 +228,8 @@ function buildFallbackFeedback(answers, assessmentPath) {
     answers: safeAnswers,
     assessmentPath: activePath,
     riskLevel,
-    stressLevel: activePath === "trauma" ? "Not primary" : riskLevel,
-    traumaImpact: activePath === "stress" ? "Not primary" : riskLevel,
+    stressLevel,
+    traumaImpact,
     summary: summaries[riskLevel],
     reportedConcerns: answerValues.slice(0, 2),
     possibleImpacts: answerValues.slice(1, 3),
@@ -221,21 +246,142 @@ function buildFallbackFeedback(answers, assessmentPath) {
   };
 }
 
+function normalizeCombinedFeedback(feedback, transcript, createdAt) {
+  const normalizedFeedback = {
+    ...feedback,
+    assessmentPath: "combined",
+    answers: answersFromTranscript(transcript),
+    transcript,
+    sessionDetails: buildSessionDetails(transcript, createdAt),
+    createdAt,
+  };
+
+  if (!normalizedFeedback.stressLevel || String(normalizedFeedback.stressLevel).toLowerCase().includes("not primary")) {
+    normalizedFeedback.stressLevel = "Unclear";
+  }
+
+  if (!normalizedFeedback.traumaImpact || String(normalizedFeedback.traumaImpact).toLowerCase().includes("not primary")) {
+    normalizedFeedback.traumaImpact = "Unclear";
+  }
+
+  const priorityRank = {
+    low: 1,
+    unclear: 2,
+    moderate: 3,
+    high: 4,
+  };
+  const levels = [
+    normalizedFeedback.riskLevel,
+    normalizedFeedback.stressLevel,
+    normalizedFeedback.traumaImpact,
+  ];
+  const highestLevel = levels.reduce((currentHighest, level) => {
+    const normalizedLevel = String(level || "Unclear").toLowerCase();
+    const currentRank = priorityRank[String(currentHighest).toLowerCase()] || 0;
+    const nextRank = priorityRank[normalizedLevel] || 0;
+
+    return nextRank > currentRank ? level : currentHighest;
+  }, "Unclear");
+
+  normalizedFeedback.riskLevel = highestLevel;
+
+  return normalizedFeedback;
+}
+
 export default function ChatBox({ onFeedback, onNavigate }) {
   const { messages, addMessage, resetMessages, setMessages } = useChat();
   const [draft, setDraft] = useState("");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [assessmentPath, setAssessmentPath] = useState(null);
+  const [currentPrompt, setCurrentPrompt] = useState(initialPrompt);
   const [answers, setAnswers] = useState({});
   const [isSending, setIsSending] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [supportsSpeechInput, setSupportsSpeechInput] = useState(false);
   const [error, setError] = useState("");
+  const [speechError, setSpeechError] = useState("");
+  const recognitionRef = useRef(null);
+  const shouldKeepListeningRef = useRef(false);
+  const speechBaseDraftRef = useRef("");
+  const draftInputRef = useRef(null);
 
-  const promptSequence = assessmentPath ? getPromptSequence(assessmentPath) : [pathPrompt];
-  const currentPrompt = promptSequence[stepIndex] || promptSequence[promptSequence.length - 1];
   const hasUserResponse = messages.some((message) => message.sender === "user");
+  const progressPercent = Math.min(
+    100,
+    ((Object.keys(answers).length + 1) / (promptOrder.length + 1)) * 100
+  );
 
-  const createFeedback = async (transcript, fallbackAnswers = answers, fallbackPath = assessmentPath || "stress") => {
+  useEffect(() => {
+    const draftInput = draftInputRef.current;
+
+    if (!draftInput) {
+      return;
+    }
+
+    draftInput.style.height = "auto";
+    draftInput.style.height = `${draftInput.scrollHeight}px`;
+  }, [draft]);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setSpeechError("");
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+
+      if (shouldKeepListeningRef.current) {
+        try {
+          recognition.start();
+        } catch {
+          shouldKeepListeningRef.current = false;
+        }
+      }
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+
+      if (event.error === "aborted" || event.error === "no-speech") {
+        return;
+      }
+
+      shouldKeepListeningRef.current = false;
+      setSpeechError("Voice input could not be captured. Please check microphone access.");
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join(" ")
+        .trim();
+      const baseDraft = speechBaseDraftRef.current;
+
+      setDraft(`${baseDraft}${baseDraft && transcript ? " " : ""}${transcript}`.trim());
+    };
+
+    recognitionRef.current = recognition;
+    setSupportsSpeechInput(true);
+
+    return () => {
+      shouldKeepListeningRef.current = false;
+      recognition.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  const createFeedback = async (transcript, fallbackAnswers = answers) => {
     const createdAt = new Date().toISOString();
 
     try {
@@ -244,18 +390,11 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         body: JSON.stringify({ messages: transcript }),
       });
 
-      onFeedback({
-        ...apiResponse.feedback,
-        assessmentPath: apiResponse.feedback.assessmentPath || fallbackPath,
-        answers: answersFromTranscript(transcript),
-        transcript,
-        sessionDetails: buildSessionDetails(transcript, createdAt),
-        createdAt,
-      });
+      onFeedback(normalizeCombinedFeedback(apiResponse.feedback, transcript, createdAt));
     } catch (requestError) {
       console.warn("Backend feedback unavailable, using fallback feedback generator:", requestError);
       onFeedback({
-        ...buildFallbackFeedback(fallbackAnswers, fallbackPath),
+        ...buildFallbackFeedback(fallbackAnswers),
         transcript,
         sessionDetails: buildSessionDetails(transcript, createdAt),
         createdAt,
@@ -269,27 +408,27 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     const trimmed = answerText.trim();
     if (!trimmed || isSending || isFinishing) return;
 
-    const userMessage = { id: Date.now(), sender: "user", text: trimmed };
+    shouldKeepListeningRef.current = false;
+    recognitionRef.current?.stop();
+
+    const userMessage = { id: Date.now(), sender: "user", text: trimmed, promptKey: currentPrompt.key };
     const nextTranscript = [...messages, userMessage];
     const updatedAnswers = { ...answers, [currentPrompt.key]: trimmed };
-    const nextAssessmentPath = assessmentPath || classifyAssessmentPath(trimmed);
-    const nextPromptSequence = getPromptSequence(nextAssessmentPath);
+    const nextPrompt = chooseNextPrompt(updatedAnswers, trimmed);
 
     addMessage(userMessage);
-    setAssessmentPath(nextAssessmentPath);
     setAnswers(updatedAnswers);
     setDraft("");
     setError("");
 
-    if (stepIndex < nextPromptSequence.length - 1) {
-      const nextStepIndex = stepIndex + 1;
+    if (nextPrompt) {
       const botMessage = {
         id: Date.now() + 1,
         sender: "bot",
-        text: nextPromptSequence[nextStepIndex].text,
+        text: nextPrompt.text,
       };
 
-      setStepIndex(nextStepIndex);
+      setCurrentPrompt(nextPrompt);
       setTimeout(() => addMessage(botMessage), 200);
       return;
     }
@@ -306,7 +445,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     setMessages(completedTranscript);
 
     try {
-      await createFeedback(completedTranscript, updatedAnswers, nextAssessmentPath);
+      await createFeedback(completedTranscript, updatedAnswers);
     } catch (requestError) {
       setError(requestError.message || "The counselling API could not generate feedback.");
     } finally {
@@ -320,14 +459,53 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     submitAnswer(draft);
   };
 
+  const handleDraftKeyDown = (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      submitAnswer(event.currentTarget.value);
+    }
+  };
+
+  const handleDraftBeforeInput = (event) => {
+    if (event.inputType === "insertLineBreak") {
+      event.preventDefault();
+      submitAnswer(event.currentTarget.value);
+    }
+  };
+
+  const handleVoiceInput = () => {
+    if (!recognitionRef.current || isSending || isFinishing) {
+      return;
+    }
+
+    if (isListening) {
+      shouldKeepListeningRef.current = false;
+      recognitionRef.current.stop();
+      return;
+    }
+
+    speechBaseDraftRef.current = draft.trim();
+    shouldKeepListeningRef.current = true;
+    setSpeechError("");
+
+    try {
+      recognitionRef.current.start();
+    } catch {
+      shouldKeepListeningRef.current = false;
+      setSpeechError("Voice input is already active.");
+    }
+  };
+
   const handleFinish = async () => {
     if (!hasUserResponse || isFinishing) return;
 
+    shouldKeepListeningRef.current = false;
+    recognitionRef.current?.stop();
     setError("");
     setIsFinishing(true);
 
     try {
-      await createFeedback(messages, answers, assessmentPath || "stress");
+      await createFeedback(messages, answers);
     } catch (requestError) {
       setError(requestError.message || "The counselling API could not generate feedback.");
     } finally {
@@ -336,12 +514,14 @@ export default function ChatBox({ onFeedback, onNavigate }) {
   };
 
   const handleReset = () => {
+    shouldKeepListeningRef.current = false;
+    recognitionRef.current?.stop();
     resetMessages();
-    setStepIndex(0);
-    setAssessmentPath(null);
+    setCurrentPrompt(initialPrompt);
     setAnswers({});
     setDraft("");
     setError("");
+    setSpeechError("");
   };
 
   return (
@@ -353,7 +533,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           </div>
           <div>
             <div className="chat-title-wrap">
-              <span className="chat-title">Trauma & Stress Assessment Assistant</span>
+              <span className="chat-title">MindAssess Assistant</span>
               <span className="chat-online-badge">
                 <span className="online-dot" /> Live Active
               </span>
@@ -375,7 +555,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
       </div>
 
       <div className="chat-progress-track">
-        <div className="chat-progress-fill" style={{ width: `${((stepIndex + 1) / promptSequence.length) * 100}%` }} />
+        <div className="chat-progress-fill" style={{ width: `${progressPercent}%` }} />
       </div>
 
       <div className="message-list">
@@ -405,14 +585,28 @@ export default function ChatBox({ onFeedback, onNavigate }) {
       )}
 
       <form className="chat-form" onSubmit={handleFormSubmit}>
-        <input
-          type="text"
+        <textarea
+          ref={draftInputRef}
+          rows={1}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder={isFinishing ? "Preparing feedback..." : "Type your response..."}
+          onBeforeInput={handleDraftBeforeInput}
+          onKeyDown={handleDraftKeyDown}
+          placeholder={isListening ? "Listening..." : isFinishing ? "Preparing feedback..." : "Type your response..."}
           aria-label="Type your response"
           disabled={isSending || isFinishing}
         />
+        <button
+          type="button"
+          className={`mic-btn ${isListening ? "active" : ""}`}
+          onClick={handleVoiceInput}
+          disabled={isSending || isFinishing || !supportsSpeechInput}
+          aria-label={isListening ? "Stop voice input" : "Start voice input"}
+          aria-pressed={isListening}
+          title={supportsSpeechInput ? "Voice input" : "Voice input is not supported in this browser"}
+        >
+          <Mic size={18} />
+        </button>
         <button
           type="submit"
           className="primary-btn"
@@ -440,6 +634,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         </button>
       </form>
       {error && <p className="form-error">{error}</p>}
+      {speechError && <p className="form-error">{speechError}</p>}
     </div>
   );
 }
