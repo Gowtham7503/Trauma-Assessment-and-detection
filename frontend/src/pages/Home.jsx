@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ShieldCheck, 
+  HeartHandshake, 
   MessageSquareHeart, 
   Activity, 
-  HeartHandshake, 
-  Sparkles, 
-  ArrowRight, 
-  PhoneCall, 
-  CheckCircle2, 
-  Brain, 
-  Lock, 
   Stethoscope, 
+  Lock, 
+  Brain, 
+  Sparkles, 
+  CheckCircle2, 
+  ArrowRight, 
   Flame 
 } from "lucide-react";
 import ImageSlider from "../components/ImageSlider";
@@ -43,7 +41,7 @@ const emotionalStates = [
     label: "Seeking Gentle Advice & Overview",
     risk: "Low Priority",
     riskClass: "low",
-    tip: "Exploratory Care: Our guided chat will gently ask 3 questions to generate personalized care suggestions."
+    tip: "Exploratory Care: Our guided assessment will gently ask 3 questions to generate personalized care suggestions."
   }
 ];
 
@@ -79,7 +77,7 @@ const workflowSteps = [
 ];
 
 const trustMetrics = [
-  { icon: Lock, label: "100% Confidential", desc: "Private, anonymous chat sessions" },
+  { icon: Lock, label: "100% Confidential", desc: "Private, anonymous assessment sessions" },
   { icon: Brain, label: "Trauma-Informed", desc: "Built with clinical care principles" },
   { icon: Sparkles, label: "Instant Analysis", desc: "Real-time risk priority classification" },
   { icon: CheckCircle2, label: "24/7 Available", desc: "Immediate access anytime you need" },
@@ -91,18 +89,6 @@ export default function Home({ onNavigate }) {
 
   return (
     <div className="home-container">
-      {/* 24/7 Emergency & Safety Banner */}
-      <section className="crisis-banner">
-        <div className="crisis-banner-content">
-          <div className="pulse-dot" />
-          <span>Need Immediate Crisis Support? If you or someone you know is in danger, help is available 24/7.</span>
-        </div>
-        <div className="crisis-phone-tag">
-          <PhoneCall size={16} />
-          <span>Call or Text 988</span>
-        </div>
-      </section>
-
       {/* Dynamic Hero Slider */}
       <section className="hero-section">
         <ImageSlider onActionClick={onNavigate} />
@@ -164,7 +150,7 @@ export default function Home({ onNavigate }) {
                 className="primary-btn"
                 onClick={() => onNavigate("chat")}
               >
-                <span>Start Full Trauma Assessment</span>
+                <span>Start Trauma Assessment</span>
                 <ArrowRight size={18} />
               </button>
             </div>
@@ -224,29 +210,29 @@ export default function Home({ onNavigate }) {
         </div>
       </section>
 
-      {/* High-Impact Call To Action Banner */}
+      {/* Centered High-Impact Bottom Call To Action Banner */}
       <section className="cta-banner">
         <div className="cta-content">
           <h2>Ready for a Gentle Trauma Assessment?</h2>
           <p>
             Take the first step toward understanding your current support needs in a completely safe, private environment.
           </p>
-        </div>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <button
-            type="button"
-            className="slider-btn primary"
-            onClick={() => onNavigate("chat")}
-          >
-            Start Trauma Chat
-          </button>
-          <button
-            type="button"
-            className="slider-btn secondary"
-            onClick={() => onNavigate("feedback")}
-          >
-            View Feedback
-          </button>
+          <div className="cta-actions">
+            <button
+              type="button"
+              className="slider-btn primary"
+              onClick={() => onNavigate("chat")}
+            >
+              Start Trauma Assessment
+            </button>
+            <button
+              type="button"
+              className="slider-btn secondary"
+              onClick={() => onNavigate("feedback")}
+            >
+              View Feedback
+            </button>
+          </div>
         </div>
       </section>
     </div>
