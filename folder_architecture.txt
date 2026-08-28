@@ -1,0 +1,113 @@
+NHAA-Trauma-Assessment/
+│
+├── README.md
+├── .gitignore
+├── .env.example
+│
+├── backend/
+│   │
+│   ├── run.py
+│   ├── requirements.txt
+│   │
+│   ├── config/
+│   │   ├── __init__.py
+│   │   └── config.py
+│   │
+│   ├── app/
+│   │   ├── __init__.py
+│   │   │
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   ├── auth_routes.py
+│   │   │   ├── chat_routes.py
+│   │   │   ├── assessment_routes.py
+│   │   │   └── case_routes.py
+│   │   │
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   ├── user_model.py
+│   │   │   ├── case_model.py
+│   │   │   └── assessment_model.py
+│   │   │
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── llm_service.py
+│   │   │   ├── assessment_service.py
+│   │   │   ├── safety_service.py
+│   │   │   └── case_service.py
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── __init__.py
+│   │   │   ├── validators.py
+│   │   │   ├── pii_masking.py
+│   │   │   └── helpers.py
+│   │   │
+│   │   └── database/
+│   │       ├── __init__.py
+│   │       └── mongodb.py
+│   │
+│   └── tests/
+│       ├── test_chat.py
+│       ├── test_assessment.py
+│       └── test_safety.py
+│
+├── frontend/
+│   │
+│   ├── package.json
+│   ├── vite.config.js
+│   │
+│   ├── public/
+│   │
+│   └── src/
+│       │
+│       ├── main.jsx
+│       ├── App.jsx
+│       ├── index.css
+│       │
+│       ├── components/
+│       │   ├── Navbar.jsx
+│       │   ├── ChatBox.jsx
+│       │   ├── Message.jsx
+│       │   ├── RiskCard.jsx
+│       │   ├── StressMeter.jsx
+│       │   └── Loading.jsx
+│       │
+│       ├── pages/
+│       │   ├── Home.jsx
+│       │   ├── Chat.jsx
+│       │   ├── Assessment.jsx
+│       │   ├── Dashboard.jsx
+│       │   └── CaseDetails.jsx
+│       │
+│       ├── services/
+│       │   └── api.js
+│       │
+│       ├── hooks/
+│       │   └── useChat.js
+│       │
+│       └── assets/
+│           └── images/
+│
+├── ai/
+│   │
+│   ├── prompts/
+│   │   ├── assessment_prompt.txt
+│   │   ├── conversation_prompt.txt
+│   │   └── safety_prompt.txt
+│   │
+│   ├── schemas/
+│   │   └── assessment_schema.json
+│   │
+│   ├── scoring/
+│   │   ├── risk_score.py
+│   │   └── thresholds.py
+│   │
+│   └── evaluation/
+│       ├── test_cases.json
+│       └── evaluate.py
+│
+└── docs/
+    ├── architecture.md
+    ├── api.md
+    ├── assessment.md
+    └── demo.md
