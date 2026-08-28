@@ -3,7 +3,7 @@
 :root {
   --bg-deep: #09131d;
   --panel-glass: rgba(15, 29, 45, 0.75);
-  --panel-glass-light: rgba(255, 255, 255, 0.88);
+  --panel-glass-light: rgba(255, 255, 255, 0.92);
   --teal-primary: #0d9488;
   --teal-glow: #14b8a6;
   --cyan-bright: #06b6d4;
@@ -13,7 +13,6 @@
   --emerald-safe: #10b981;
   --text-main: #0f172a;
   --text-muted: #64748b;
-  --text-light: #f8fafc;
   --border-glass: rgba(20, 184, 166, 0.22);
   --border-glow: rgba(6, 182, 212, 0.45);
   --shadow-sm: 0 4px 20px -2px rgba(13, 148, 136, 0.08);
@@ -33,16 +32,13 @@ html, body, #root {
   min-height: 100vh;
 }
 
-/* ==========================================================================
-   Clinical & Therapeutic Ambient Background
-   ========================================================================== */
 body {
   margin: 0;
   color: var(--text-main);
   background-color: #f1f5f9;
   background-image: 
-    radial-gradient(at 15% 15%, rgba(13, 148, 136, 0.12) 0px, transparent 45%),
-    radial-gradient(at 85% 20%, rgba(6, 182, 212, 0.1) 0px, transparent 50%),
+    radial-gradient(at 15% 15%, rgba(13, 148, 136, 0.14) 0px, transparent 45%),
+    radial-gradient(at 85% 20%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
     radial-gradient(at 50% 80%, rgba(55, 48, 163, 0.08) 0px, transparent 50%),
     linear-gradient(180deg, #f8fafc 0%, #edf4f8 100%);
   background-attachment: fixed;
@@ -79,7 +75,7 @@ button {
 }
 
 /* ==========================================================================
-   Top Navigation Bar (Clinical Frosted Header)
+   Header Bar
    ========================================================================== */
 .topbar {
   position: sticky;
@@ -90,7 +86,7 @@ button {
   justify-content: space-between;
   gap: 1.5rem;
   padding: 0.9rem 2.5rem;
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(20, 184, 166, 0.2);
@@ -184,24 +180,82 @@ button {
   z-index: -1;
 }
 
-/* ==========================================================================
-   Main Page Layout
-   ========================================================================== */
 .page-shell {
   max-width: 1240px;
   width: 100%;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 2rem 1.5rem 4rem;
   flex: 1;
 }
 
 /* ==========================================================================
-   Dynamic Clinical Image Slider (Trauma Assessment Focus)
+   Crisis & Safety Helpline Banner
+   ========================================================================== */
+.crisis-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.08), rgba(245, 158, 11, 0.08));
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  border-radius: 18px;
+  margin-bottom: 2rem;
+}
+
+.crisis-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.9rem;
+  color: #9f1239;
+  font-weight: 600;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f43f5e;
+  box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  animation: pulse-ring 1.8s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(244, 63, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+  }
+}
+
+.crisis-phone-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #be123c;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   Image Slider
    ========================================================================== */
 .slider-wrapper {
   position: relative;
   width: 100%;
-  min-height: 500px;
+  min-height: 480px;
   border-radius: 28px;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -229,7 +283,7 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.8);
+  filter: brightness(0.78);
   transform: scale(1.02);
   transition: transform 7s ease;
 }
@@ -244,8 +298,8 @@ button {
   background: linear-gradient(
     90deg, 
     rgba(9, 19, 29, 0.95) 0%, 
-    rgba(9, 19, 29, 0.72) 55%, 
-    rgba(9, 19, 29, 0.25) 100%
+    rgba(9, 19, 29, 0.7) 55%, 
+    rgba(9, 19, 29, 0.2) 100%
   );
 }
 
@@ -265,7 +319,6 @@ button {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   font-size: 0.8rem;
   font-weight: 700;
@@ -273,7 +326,6 @@ button {
   text-transform: uppercase;
   color: #2dd4bf;
   margin-bottom: 1.25rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .slider-title {
@@ -283,7 +335,6 @@ button {
   line-height: 1.12;
   margin: 0 0 1rem;
   color: #ffffff;
-  text-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
 }
 
 .slider-subtitle {
@@ -291,7 +342,6 @@ button {
   line-height: 1.65;
   color: rgba(241, 245, 249, 0.92);
   margin: 0 0 2.2rem;
-  font-weight: 400;
 }
 
 .slider-actions {
@@ -354,13 +404,8 @@ button {
   color: #ffffff;
 }
 
-.slider-nav-btn.prev {
-  left: 1.5rem;
-}
-
-.slider-nav-btn.next {
-  right: 1.5rem;
-}
+.slider-nav-btn.prev { left: 1.5rem; }
+.slider-nav-btn.next { right: 1.5rem; }
 
 .slider-indicators {
   position: absolute;
@@ -396,312 +441,173 @@ button {
 }
 
 /* ==========================================================================
-   Grids & Cards Aesthetics
+   Interactive Quick Assessment Check-In Widget
    ========================================================================== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2.5rem;
-}
-
-.stat-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1.6rem;
-  background: var(--panel-glass-light);
-  backdrop-filter: blur(20px);
-  border-radius: 22px;
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #0d9488, #0284c7);
-  border-radius: 4px 0 0 4px;
-}
-
-.stat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-glow);
-}
-
-.stat-icon-wrap {
-  width: 3.4rem;
-  height: 3.4rem;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(2, 132, 199, 0.12));
-  color: #0d9488;
-}
-
-.stat-info span {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-.stat-info strong {
-  display: block;
+.home-section-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.65rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: var(--bg-deep);
+  margin: 0 0 0.5rem;
 }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.75rem;
-  margin-top: 2.5rem;
+.home-section-desc {
+  color: var(--text-muted);
+  font-size: 1.02rem;
+  margin: 0 0 1.75rem;
 }
 
-.info-card {
+.interactive-checkin-card {
   padding: 2.2rem;
   background: var(--panel-glass-light);
   backdrop-filter: blur(20px);
-  border-radius: 24px;
+  border-radius: 26px;
   border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.35s ease;
-}
-
-.info-card:hover {
-  transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--border-glow);
+  margin-top: 3rem;
 }
 
-.info-card-header {
+.emotion-chips {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin: 1.25rem 0 1.75rem;
 }
 
-.info-card-icon {
-  width: 3rem;
-  height: 3rem;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(6, 182, 212, 0.15));
-  color: #0d9488;
-}
-
-.info-card h3 {
-  margin: 0;
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--bg-deep);
-}
-
-.info-card p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.98rem;
-  line-height: 1.7;
-}
-
-/* Buttons */
-.primary-btn, .secondary-btn {
+.emotion-chip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
-  border-radius: 16px;
-  padding: 0.95rem 1.75rem;
+  gap: 0.6rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  color: var(--text-main);
   font-weight: 700;
-  font-size: 0.95rem;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.primary-btn {
-  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
-  color: white;
-  box-shadow: 0 10px 25px -4px rgba(13, 148, 136, 0.45);
-}
-
-.primary-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px -4px rgba(13, 148, 136, 0.65);
-}
-
-.secondary-btn {
-  background: #ffffff;
-  color: var(--bg-deep);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-}
-
-.secondary-btn:hover {
-  background: #f8fafc;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-/* ==========================================================================
-   Chat & Feedback Pages Clinical Enhancements
-   ========================================================================== */
-.chat-panel, .feedback-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.chat-box {
-  background: var(--panel-glass-light);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-glass);
-  border-radius: 26px;
-  box-shadow: var(--shadow-lg);
-  padding: 2rem;
-  min-height: 500px;
-  display: flex;
-  flex-direction: column;
-}
-
-.message-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-}
-
-.message {
-  max-width: 80%;
-  padding: 1.1rem 1.4rem;
-  border-radius: 22px;
-  font-size: 0.98rem;
-  line-height: 1.65;
-}
-
-.message--bot {
-  background: #ffffff;
-  color: var(--bg-deep);
-  border: 1px solid var(--border-glass);
-  border-bottom-left-radius: 4px;
-  box-shadow: var(--shadow-sm);
-}
-
-.message--user {
-  margin-left: auto;
-  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
-  color: white;
-  border-bottom-right-radius: 4px;
-  box-shadow: 0 8px 22px -4px rgba(13, 148, 136, 0.4);
-}
-
-.chat-form {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.chat-form input {
-  flex: 1;
-  border: 1px solid var(--border-glass);
-  border-radius: 18px;
-  padding: 1.05rem 1.4rem;
-  background: #ffffff;
+  font-size: 0.92rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.25s ease;
 }
 
-.chat-form input:focus {
-  outline: none;
+.emotion-chip:hover {
+  transform: translateY(-2px);
   border-color: #0d9488;
-  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.18);
 }
 
-.feedback-grid {
+.emotion-chip.active {
+  background: linear-gradient(135deg, #0d9488, #0284c7);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 8px 20px -4px rgba(13, 148, 136, 0.45);
+}
+
+.diagnostic-preview-box {
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: #f8fafc;
+  border: 1px dashed rgba(20, 184, 166, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.preview-risk-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.coping-tip-box {
+  background: rgba(13, 148, 136, 0.08);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  color: #0f766e;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Interactive Workflow Step Timeline
+   ========================================================================== */
+.workflow-section {
+  margin-top: 3.5rem;
+}
+
+.workflow-tabs {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
 }
 
-.feedback-card {
-  padding: 2.2rem;
+.workflow-tab-card {
+  padding: 1.75rem;
   background: var(--panel-glass-light);
   backdrop-filter: blur(20px);
+  border-radius: 22px;
   border: 1px solid var(--border-glass);
-  border-radius: 26px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.35s ease;
+  cursor: pointer;
+}
+
+.workflow-tab-card:hover, .workflow-tab-card.active {
+  transform: translateY(-5px);
+  border-color: var(--border-glow);
   box-shadow: var(--shadow-lg);
 }
 
-.feedback-card h2 {
-  margin: 0.4rem 0 1rem;
+.workflow-tab-card.active {
+  background: #ffffff;
+  border-width: 2px;
+}
+
+.workflow-step-num {
   font-family: 'Outfit', sans-serif;
-  color: var(--bg-deep);
-  font-size: 1.7rem;
-}
-
-.risk-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.65rem 1.4rem;
-  border-radius: 999px;
+  font-size: 0.8rem;
   font-weight: 800;
-  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  color: #0d9488;
+  margin-bottom: 0.5rem;
 }
 
-.risk-pill.high {
-  background: rgba(244, 63, 94, 0.12);
-  color: #e11d48;
-  border: 1px solid rgba(244, 63, 94, 0.35);
+/* ==========================================================================
+   CTA Banner
+   ========================================================================== */
+.cta-banner {
+  margin-top: 4rem;
+  padding: 3.5rem 3rem;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #09131d 0%, #0d9488 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow: var(--shadow-lg);
 }
 
-.risk-pill.moderate {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+.cta-content h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem;
 }
 
-.risk-pill.low {
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.35);
+.cta-content p {
+  color: rgba(241, 245, 249, 0.9);
+  margin: 0;
+  max-width: 600px;
+  font-size: 1.05rem;
 }
 
 @media (max-width: 900px) {
-  .topbar {
-    padding: 0.9rem 1.25rem;
-  }
-
-  .slider-wrapper {
-    min-height: 440px;
-  }
-
-  .slider-caption-card {
-    padding: 2rem;
-  }
-
-  .slider-title {
-    font-size: 1.85rem;
-  }
-
-  .feedback-grid {
-    grid-template-columns: 1fr;
+  .crisis-banner, .cta-banner {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
