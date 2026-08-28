@@ -13,7 +13,6 @@ const slides = [
     fallbackImage: defaultHero,
     badge: "Clinical Triage & Support",
     icon: HeartPulse,
-    accentColor: "from-teal-500 to-emerald-700",
   },
   {
     id: 2,
@@ -23,7 +22,6 @@ const slides = [
     fallbackImage: secondaryHero,
     badge: "AI Risk Screening",
     icon: Activity,
-    accentColor: "from-cyan-500 to-blue-800",
   },
   {
     id: 3,
@@ -33,7 +31,6 @@ const slides = [
     fallbackImage: defaultHero,
     badge: "Safe Healing Sanctuary",
     icon: ShieldCheck,
-    accentColor: "from-indigo-500 to-purple-800",
   },
   {
     id: 4,
@@ -43,7 +40,6 @@ const slides = [
     fallbackImage: secondaryHero,
     badge: "Clinical Action Plans",
     icon: Stethoscope,
-    accentColor: "from-blue-600 to-teal-700",
   }
 ];
 
@@ -127,7 +123,6 @@ export default function ImageSlider({ onActionClick }) {
               alt={currentSlide.title}
               className="slider-image"
               onError={(e) => {
-                // Fallback to local hero asset if network images hit restrictions
                 e.target.src = currentSlide.fallbackImage;
               }}
             />
@@ -174,7 +169,7 @@ export default function ImageSlider({ onActionClick }) {
                 className="slider-btn primary"
                 onClick={() => onActionClick?.("chat")}
               >
-                Start Assessment Chat
+                Start Trauma Assessment
               </button>
               <button
                 type="button"
