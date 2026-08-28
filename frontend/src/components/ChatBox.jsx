@@ -1,9 +1,16 @@
 import { useState } from "react";
+import { HeartPulse, Loader2, RefreshCw, Send } from "lucide-react";
 import { useChat } from "../hooks/useChat.js";
 import { apiRequest } from "../services/api.js";
 import Message from "./Message.jsx";
 
 const openingQuestion = "What experience or situation would you like support with today?";
+
+const quickSuggestions = [
+  "Struggling with memories of a past event",
+  "Feeling overwhelmed by recent emotional stress",
+  "Experiencing sudden anxiety and tension",
+];
 
 export default function ChatBox({ onFeedback, onNavigate }) {
   const { messages, addMessage, setMessages } = useChat();
@@ -11,14 +18,15 @@ export default function ChatBox({ onFeedback, onNavigate }) {
   const [isSending, setIsSending] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [error, setError] = useState("");
+
   const visibleMessages = messages.length
     ? messages
     : [{ id: 1, sender: "bot", text: openingQuestion }];
+  const hasUserResponse = visibleMessages.some((message) => message.sender === "user");
 
-  const handleSend = async (event) => {
-    event.preventDefault();
-    const trimmed = draft.trim();
-    if (!trimmed || isSending) return;
+  const submitAnswer = async (answerText) => {
+    const trimmed = answerText.trim();
+    if (!trimmed || isSending || isFinishing) return;
 
     const userMessage = { id: Date.now(), sender: "user", text: trimmed };
     const nextTranscript = [...visibleMessages, userMessage];
@@ -46,8 +54,13 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     }
   };
 
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    submitAnswer(draft);
+  };
+
   const handleFinish = async () => {
-    if (isFinishing) return;
+    if (!hasUserResponse || isFinishing) return;
 
     setError("");
     setIsFinishing(true);
@@ -76,10 +89,46 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     }
   };
 
-  const hasUserResponse = visibleMessages.some((message) => message.sender === "user");
+  const handleReset = () => {
+    setMessages([]);
+    setDraft("");
+    setError("");
+  };
 
   return (
     <div className="chat-box">
+      <div className="chat-header">
+        <div className="chat-header-info">
+          <div className="chat-avatar-badge">
+            <HeartPulse size={20} />
+          </div>
+          <div>
+            <div className="chat-title-wrap">
+              <span className="chat-title">Trauma Assessment Assistant</span>
+              <span className="chat-online-badge">
+                <span className="online-dot" /> Live Active
+              </span>
+            </div>
+            <p className="chat-subtitle">Free-form assessment conversation</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="chat-reset-btn"
+          onClick={handleReset}
+          title="Restart assessment"
+          disabled={isSending || isFinishing}
+        >
+          <RefreshCw size={15} />
+          <span>Reset</span>
+        </button>
+      </div>
+
+      <div className="chat-progress-track">
+        <div className="chat-progress-fill" style={{ width: hasUserResponse ? "100%" : "20%" }} />
+      </div>
+
       <div className="message-list">
         {visibleMessages.map((message) => (
           <Message key={message.id} role={message.sender}>
@@ -88,7 +137,25 @@ export default function ChatBox({ onFeedback, onNavigate }) {
         ))}
       </div>
 
-      <form className="chat-form" onSubmit={handleSend}>
+      {!isSending && !hasUserResponse && (
+        <div className="chat-suggestions">
+          <span className="suggestion-label">Quick suggestions:</span>
+          <div className="suggestion-chips">
+            {quickSuggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                className="suggestion-chip"
+                onClick={() => submitAnswer(suggestion)}
+              >
+                <span>{suggestion}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <form className="chat-form" onSubmit={handleFormSubmit}>
         <input
           type="text"
           value={draft}
@@ -97,10 +164,29 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           aria-label="Type a message"
           disabled={isSending || isFinishing}
         />
-        <button type="submit" className="primary-btn" disabled={isSending || isFinishing}>
-          {isSending ? "Sending" : "Send"}
+        <button
+          type="submit"
+          className="primary-btn"
+          disabled={isSending || isFinishing || !draft.trim()}
+        >
+          {isSending ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              <span>Sending</span>
+            </>
+          ) : (
+            <>
+              <span>Send</span>
+              <Send size={16} />
+            </>
+          )}
         </button>
-        <button type="button" className="secondary-btn" onClick={handleFinish} disabled={!hasUserResponse || isFinishing}>
+        <button
+          type="button"
+          className="secondary-btn"
+          onClick={handleFinish}
+          disabled={!hasUserResponse || isFinishing || isSending}
+        >
           {isFinishing ? "Finishing" : "Finish"}
         </button>
       </form>
