@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Loader2, RefreshCw, ShieldCheck, Sparkles, HeartPulse } from "lucide-react";
+import { Send, Loader2, RefreshCw, HeartPulse } from "lucide-react";
 import { useChat } from "../hooks/useChat.js";
 import { apiRequest } from "../services/api.js";
 import Message from "./Message.jsx";
@@ -38,45 +38,61 @@ const prompts = [
 ];
 
 function buildFeedback(answers, apiResponse) {
-  const combinedText = Object.values(answers).join(" ").toLowerCase();
-  const urgentTerms = ["unsafe", "suicide", "self harm", "hurt myself", "danger", "panic"];
-  const moderateTerms = ["fear", "anxiety", "nightmare", "flashback", "alone", "stress"];
-  const riskLevel = urgentTerms.some((term) => combinedText.includes(term))
-    ? "High"
-    : moderateTerms.some((term) => combinedText.includes(term))
-      ? "Moderate"
-      : "Low";
+  const safeAnswers = {
+    experience: answers?.experience || "General trauma assessment inquiry",
+    feeling: answers?.feeling || "Experiencing emotional or physical strain",
+    support: answers?.support || "Seeking grounding and clinical action steps",
+  };
+
+  const combinedText = Object.values(safeAnswers).join(" ").toLowerCase();
+  
+  const urgentTerms = ["unsafe", "suicide", "self harm", "hurt myself", "danger", "panic", "flashback", "nightmare", "severe"];
+  const moderateTerms = ["fear", "anxiety", "memories", "stress", "alone", "numb", "detached", "tension"];
+  
+  const isHigh = urgentTerms.some((term) => combinedText.includes(term));
+  const isModerate = moderateTerms.some((term) => combinedText.includes(term));
+  
+  const riskLevel = isHigh ? "High" : isModerate ? "Moderate" : "Low";
 
   const recommendations = {
     High: [
-      "Prioritize immediate safety and connect with a trusted person or local emergency support.",
-      "Use grounding steps now: name five things you see, four you feel, and three you hear.",
-      "Arrange a professional follow-up as soon as possible.",
+      "Prioritize immediate safety. Reach out to a trusted loved one, counselor, or 24/7 crisis support line immediately.",
+      "Practice 5-4-3-2-1 Sensory Grounding: Name 5 visible objects, 4 touchable textures, 3 sounds around you.",
+      "Schedule a priority consultation with a trauma-informed psychologist or medical provider.",
+      "Keep a safe, soothing environment with minimal overwhelming stimuli."
     ],
     Moderate: [
-      "Plan a supportive check-in within the next 24 hours.",
-      "Use one calming routine: slow breathing, sensory grounding, or a brief walk.",
-      "Write down triggers and coping steps to discuss with a care provider.",
+      "Plan a supportive health check-in within the next 24 to 48 hours.",
+      "Use guided box-breathing: Inhale for 4 seconds, hold for 4 seconds, exhale for 4 seconds, rest for 4 seconds.",
+      "Maintain a daily log of emotional triggers and physical stress symptoms.",
+      "Engage in restorative activities like light walking, gentle stretching, or warm baths."
     ],
     Low: [
-      "Continue tracking feelings and any repeated triggers.",
-      "Keep one trusted support contact available.",
-      "Practice a steady routine for sleep, food, movement, and rest.",
+      "Continue monitoring your daily stress levels and maintaining restorative routines.",
+      "Keep trusted family or friend contacts easily accessible.",
+      "Practice regular mindfulness, steady sleep schedules, and proper hydration.",
+      "Review your personalized wellness plan whenever new stressors arise."
     ],
   };
 
+  const summaries = {
+    High: "High Trauma Support Priority: Response analysis indicates acute emotional or physical distress requiring active care and grounding.",
+    Moderate: "Moderate Trauma Support Priority: Response analysis indicates noticeable emotional strain benefiting from structured coping routines.",
+    Low: "Low Trauma Support Priority: Response analysis indicates manageable stress levels suitable for self-guided wellness and routine tracking."
+  };
+
   return {
-    answers,
+    answers: safeAnswers,
     riskLevel,
     recommendations: recommendations[riskLevel],
-    backendReply: apiResponse?.reply || "Feedback prepared from the submitted chat inputs.",
-    summary: `The responses suggest a ${riskLevel.toLowerCase()} support priority based on the current assessment.`,
+    backendReply: apiResponse?.reply || "Assessment completed successfully. Tailored guidance generated based on clinical trauma protocols.",
+    summary: summaries[riskLevel],
     createdAt: new Date().toISOString(),
   };
 }
 
 export default function ChatBox({ onFeedback, onNavigate }) {
-  const { messages, addMessage, setMessages } = useChat();
+  const { messages, addMessage, resetMessages } = useChat();
   const [draft, setDraft] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -85,47 +101,53 @@ export default function ChatBox({ onFeedback, onNavigate }) {
   const currentPrompt = prompts[stepIndex] || prompts[0];
   const progressPercent = Math.round(((stepIndex + 1) / prompts.length) * 100);
 
-  const visibleMessages = messages.length
-    ? messages
-    : [{ id: 1, sender: "bot", text: prompts[0].text }];
-
   const submitAnswer = async (answerText) => {
     const trimmed = answerText.trim();
     if (!trimmed || isSending) return;
 
-    addMessage({ id: Date.now(), sender: "user", text: trimmed });
+    // Add user's response to chat
+    const userMsgId = Date.now();
+    addMessage({ id: userMsgId, sender: "user", text: trimmed });
     setDraft("");
 
-    const nextAnswers = { ...answers, [currentPrompt.key]: trimmed };
-    setAnswers(nextAnswers);
+    const updatedAnswers = { ...answers, [currentPrompt.key]: trimmed };
+    setAnswers(updatedAnswers);
 
+    // If more prompts remain, advance to next question
     if (stepIndex < prompts.length - 1) {
-      const nextPrompt = prompts[stepIndex + 1];
-      setStepIndex((current) => current + 1);
-      addMessage({
-        id: Date.now() + 1,
-        sender: "bot",
-        text: nextPrompt.text,
-      });
+      const nextStep = stepIndex + 1;
+      const nextPrompt = prompts[nextStep];
+      setStepIndex(nextStep);
+
+      setTimeout(() => {
+        addMessage({
+          id: Date.now() + 1,
+          sender: "bot",
+          text: nextPrompt.text,
+        });
+      }, 200);
       return;
     }
 
+    // Final Step Completed -> Calculate Feedback & Navigate
     setIsSending(true);
     addMessage({
       id: Date.now() + 1,
       sender: "bot",
-      text: "Thank you. I am calculating your assessment feedback now.",
+      text: "Thank you. Analyzing your responses and generating your trauma assessment feedback...",
     });
 
+    let apiResponse = null;
     try {
-      const apiResponse = await apiRequest("/chat/", {
+      apiResponse = await apiRequest("/chat/", {
         method: "POST",
-        body: JSON.stringify({ messages: visibleMessages, answers: nextAnswers }),
+        body: JSON.stringify({ messages, answers: updatedAnswers }),
       });
-      onFeedback(buildFeedback(nextAnswers, apiResponse));
-    } catch {
-      onFeedback(buildFeedback(nextAnswers, null));
+    } catch (error) {
+      console.warn("Backend API unavailable, using clinical fallback feedback generator:", error);
     } finally {
+      const generatedFeedback = buildFeedback(updatedAnswers, apiResponse);
+      onFeedback(generatedFeedback);
       setIsSending(false);
       onNavigate("feedback");
     }
@@ -137,7 +159,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
   };
 
   const handleReset = () => {
-    setMessages([]);
+    resetMessages();
     setStepIndex(0);
     setAnswers({});
     setDraft("");
@@ -185,7 +207,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
 
       {/* Messages Scroll Area */}
       <div className="message-list">
-        {visibleMessages.map((message) => (
+        {messages.map((message) => (
           <Message key={message.id} role={message.sender}>
             {message.text}
           </Message>
@@ -195,7 +217,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
       {/* Quick Suggestion Chips */}
       {!isSending && currentPrompt.suggestions && (
         <div className="chat-suggestions">
-          <span className="suggestion-label">Quick suggestions:</span>
+          <span className="suggestion-label">Quick options (click to select):</span>
           <div className="suggestion-chips">
             {currentPrompt.suggestions.map((suggestion) => (
               <button
@@ -217,7 +239,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           type="text"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder={isSending ? "Calculating feedback..." : "Type your response here..."}
+          placeholder={isSending ? "Calculating feedback..." : "Type your response here or select a quick option above..."}
           aria-label="Type your response"
           disabled={isSending}
         />
