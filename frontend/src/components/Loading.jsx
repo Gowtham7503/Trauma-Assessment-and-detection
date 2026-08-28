@@ -1,4 +1,4 @@
 export default function Loading() {
-  return <span>Loading...</span>;
+  return <span className="loading-indicator">Loading...</span>;
 }
 
