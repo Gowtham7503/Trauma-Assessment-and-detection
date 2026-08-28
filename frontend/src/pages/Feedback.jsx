@@ -1,4 +1,5 @@
-import { ShieldCheck, CheckCircle2, FileText, ArrowRight, AlertTriangle } from "lucide-react";
+import { ShieldCheck, CheckCircle2, FileText, ArrowRight, AlertTriangle, Wind } from "lucide-react";
+import BreathingTool from "../components/BreathingTool";
 
 function ResultList({ items }) {
   if (!Array.isArray(items) || items.length === 0) {
@@ -27,7 +28,7 @@ export default function Feedback({ feedback, onNavigate }) {
         </div>
         <h1 style={{ marginTop: "0.5rem" }}>No Feedback Generated Yet</h1>
         <p className="lead">
-          Please complete the 3-step Trauma Assessment first. Your summarized risk priority and personalized recommendations will appear here automatically.
+          Please complete the 3-step Trauma & Stress Assessment first. Your summarized risk priority and personalized recommendations will appear here automatically.
         </p>
         <button
           type="button"
@@ -35,9 +36,13 @@ export default function Feedback({ feedback, onNavigate }) {
           onClick={() => onNavigate("chat")}
           style={{ marginTop: "1rem" }}
         >
-          <span>Start Trauma Assessment</span>
+          <span>Start Assessment</span>
           <ArrowRight size={18} />
         </button>
+
+        <div style={{ width: "100%", marginTop: "2rem" }}>
+          <BreathingTool />
+        </div>
       </section>
     );
   }
@@ -55,7 +60,7 @@ export default function Feedback({ feedback, onNavigate }) {
           </div>
           <h1 style={{ marginTop: "0.5rem" }}>Assessment Feedback & Care Plan</h1>
           <p className="lead">
-            Review your responses, estimated risk priority level, and suggested immediate coping steps.
+            Review your responses, estimated stress/risk priority level, and suggested immediate coping steps.
           </p>
         </div>
         <span className={`risk-pill ${riskLevel.toLowerCase()}`}>
@@ -72,6 +77,15 @@ export default function Feedback({ feedback, onNavigate }) {
         </article>
 
         <article className="feedback-card">
+          <p className="eyebrow">Suggested Action Steps & Stress Relief</p>
+          <ul className="check-list">
+            {feedback.recommendations.map((item) => (
+              <li key={item} className="check-item">
+                <CheckCircle2 size={18} className="check-icon" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
           <p className="eyebrow">Reported Concerns</p>
           <ResultList items={feedback.reportedConcerns} />
         </article>
@@ -111,6 +125,18 @@ export default function Feedback({ feedback, onNavigate }) {
             <span>Submitted Responses</span>
           </p>
           <dl className="detail-list">
+            <div className="detail-row">
+              <dt>Situation / Stress Factor:</dt>
+              <dd>{feedback.answers.experience}</dd>
+            </div>
+            <div className="detail-row">
+              <dt>Current Emotional/Physical Impact:</dt>
+              <dd>{feedback.answers.feeling}</dd>
+            </div>
+            <div className="detail-row">
+              <dt>Helpful Support Needed:</dt>
+              <dd>{feedback.answers.support}</dd>
+            </div>
             {Object.entries(feedback.answers).map(([key, value], index) => (
               <div key={key} className="detail-row">
                 <dt>Response {index + 1}</dt>
@@ -120,6 +146,11 @@ export default function Feedback({ feedback, onNavigate }) {
           </dl>
         </article>
       </div>
+
+      {/* Embedded Guided Breathing & Stress Relief Toolkit */}
+      <section style={{ marginTop: "3rem" }}>
+        <BreathingTool />
+      </section>
     </section>
   );
 }
