@@ -1,23 +1,72 @@
 from flask import Flask
+
 from flask_cors import CORS
 
 from config.config import Config
 
+from app.routes import (
+    register_routes
+)
+
 
 def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    CORS(app)
 
-    from app.routes.auth_routes import auth_bp
-    from app.routes.chat_routes import chat_bp
-    from app.routes.assessment_routes import assessment_bp
-    from app.routes.case_routes import case_bp
+    app = Flask(
+        __name__
+    )
 
-    app.register_blueprint(auth_bp, url_prefix="/api/auth")
-    app.register_blueprint(chat_bp, url_prefix="/api/chat")
-    app.register_blueprint(assessment_bp, url_prefix="/api/assessment")
-    app.register_blueprint(case_bp, url_prefix="/api/cases")
+    app.config.from_object(
+        Config
+    )
+
+    CORS(
+
+        app,
+
+        resources={
+
+            r"/api/*": {
+
+                "origins":
+                    [
+                        Config.FRONTEND_URL
+                    ]
+            }
+
+        }
+
+    )
+
+    register_routes(
+        app
+    )
+
+    @app.route("/")
+    def home():
+
+        return jsonify_response(
+            {
+                "success": True,
+                "message":
+                    "NHAA Trauma Assessment Backend"
+            }
+        )
+
+    @app.route("/health")
+    def health():
+
+        return jsonify_response(
+            {
+                "success": True,
+                "status": "healthy"
+            }
+        )
 
     return app
 
+
+def jsonify_response(data):
+
+    from flask import jsonify
+
+    return jsonify(data)

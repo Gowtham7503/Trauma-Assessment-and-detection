@@ -1,6 +1,8 @@
-flask
+Flask
 flask-cors
 pymongo
 python-dotenv
+groq
+pydantic
+gunicorn
 pytest
-
