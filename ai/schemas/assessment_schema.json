@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "risk_level": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": ["risk_level", "score", "summary"]
+}
+
