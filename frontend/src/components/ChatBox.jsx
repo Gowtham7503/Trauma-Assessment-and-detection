@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Send, Loader2 } from "lucide-react";
 import { useChat } from "../hooks/useChat.js";
 import { apiRequest } from "../services/api.js";
 import Message from "./Message.jsx";
@@ -130,7 +131,17 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           disabled={isSending}
         />
         <button type="submit" className="primary-btn" disabled={isSending}>
-          {isSending ? "Sending" : "Send"}
+          {isSending ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              <span>Sending...</span>
+            </>
+          ) : (
+            <>
+              <span>Send</span>
+              <Send size={16} />
+            </>
+          )}
         </button>
       </form>
     </div>
