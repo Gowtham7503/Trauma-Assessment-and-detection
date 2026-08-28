@@ -49,18 +49,12 @@ export default function Feedback({ feedback, onNavigate }) {
         <article className="feedback-card full-width">
           <p className="eyebrow">Inputs received</p>
           <dl className="detail-list">
-            <div>
-              <dt>Experience</dt>
-              <dd>{feedback.answers.experience}</dd>
-            </div>
-            <div>
-              <dt>Current feeling</dt>
-              <dd>{feedback.answers.feeling}</dd>
-            </div>
-            <div>
-              <dt>Support needed</dt>
-              <dd>{feedback.answers.support}</dd>
-            </div>
+            {Object.entries(feedback.answers).map(([key, value], index) => (
+              <div key={key}>
+                <dt>Response {index + 1}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
           </dl>
         </article>
       </div>

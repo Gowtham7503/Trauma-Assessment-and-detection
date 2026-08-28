@@ -8,8 +8,8 @@ export default function Chat({ onFeedback, onNavigate }) {
           <p className="eyebrow accent">Guided chat</p>
           <h1>Share what you are comfortable sharing</h1>
           <p className="lead">
-            The chat asks for three short inputs, sends them through the frontend API service,
-            and prepares feedback for the next page.
+            The chat follows each response with focused trauma-screening questions and prepares
+            feedback when you finish.
           </p>
         </div>
       </div>

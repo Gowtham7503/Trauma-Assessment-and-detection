@@ -3,23 +3,12 @@ import { useChat } from "../hooks/useChat.js";
 import { apiRequest } from "../services/api.js";
 import Message from "./Message.jsx";
 
-const prompts = [
-  {
-    key: "experience",
-    text: "What experience or situation would you like support with today?",
-  },
-  {
-    key: "feeling",
-    text: "How is this affecting you right now?",
-  },
-  {
-    key: "support",
-    text: "What kind of support would feel most helpful next?",
-  },
-];
+const openingQuestion = "What experience or situation would you like support with today?";
+const fallbackQuestion = "Thank you for sharing that. Are you feeling safe right now?";
 
-function buildFeedback(answers, apiResponse) {
-  const combinedText = Object.values(answers).join(" ").toLowerCase();
+function buildFeedback(transcript, backendReply) {
+  const userResponses = transcript.filter((message) => message.sender === "user");
+  const combinedText = userResponses.map((message) => message.text).join(" ").toLowerCase();
   const urgentTerms = ["unsafe", "suicide", "self harm", "hurt myself", "danger", "panic"];
   const moderateTerms = ["fear", "anxiety", "nightmare", "flashback", "alone", "stress"];
   const riskLevel = urgentTerms.some((term) => combinedText.includes(term))
@@ -47,68 +36,67 @@ function buildFeedback(answers, apiResponse) {
   };
 
   return {
-    answers,
+    answers: userResponses.reduce((currentAnswers, message, index) => {
+      currentAnswers[`response${index + 1}`] = message.text;
+      return currentAnswers;
+    }, {}),
     riskLevel,
     recommendations: recommendations[riskLevel],
-    backendReply: apiResponse?.reply || "Feedback prepared from the submitted chat inputs.",
+    backendReply: backendReply || "Feedback prepared from the submitted chat inputs.",
     summary: `The responses suggest a ${riskLevel.toLowerCase()} support priority based on the current chat.`,
     createdAt: new Date().toISOString(),
   };
 }
 
 export default function ChatBox({ onFeedback, onNavigate }) {
-  const { messages, addMessage } = useChat();
+  const { messages, addMessage, setMessages } = useChat();
   const [draft, setDraft] = useState("");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
   const [isSending, setIsSending] = useState(false);
   const visibleMessages = messages.length
     ? messages
-    : [{ id: 1, sender: "bot", text: prompts[0].text }];
+    : [{ id: 1, sender: "bot", text: openingQuestion }];
 
   const handleSend = async (event) => {
     event.preventDefault();
     const trimmed = draft.trim();
     if (!trimmed || isSending) return;
 
-    addMessage({ id: Date.now(), sender: "user", text: trimmed });
+    const userMessage = { id: Date.now(), sender: "user", text: trimmed };
+    const nextTranscript = [...visibleMessages, userMessage];
+    addMessage(userMessage);
     setDraft("");
-
-    const currentPrompt = prompts[stepIndex];
-    const nextAnswers = { ...answers, [currentPrompt.key]: trimmed };
-    setAnswers(nextAnswers);
-
-    if (stepIndex < prompts.length - 1) {
-      const nextPrompt = prompts[stepIndex + 1];
-      setStepIndex((current) => current + 1);
-      addMessage({
-        id: Date.now() + 1,
-        sender: "bot",
-        text: nextPrompt.text,
-      });
-      return;
-    }
-
     setIsSending(true);
-    addMessage({
-      id: Date.now() + 1,
-      sender: "bot",
-      text: "Thank you. I am preparing your feedback now.",
-    });
 
     try {
       const apiResponse = await apiRequest("/chat/", {
         method: "POST",
-        body: JSON.stringify({ messages: visibleMessages, answers: nextAnswers }),
+        body: JSON.stringify({ messages: nextTranscript }),
       });
-      onFeedback(buildFeedback(nextAnswers, apiResponse));
+      const botMessage = {
+        id: Date.now() + 1,
+        sender: "bot",
+        text: apiResponse?.reply || fallbackQuestion,
+      };
+      setMessages([...nextTranscript, botMessage]);
     } catch {
-      onFeedback(buildFeedback(nextAnswers, null));
+      const botMessage = {
+        id: Date.now() + 1,
+        sender: "bot",
+        text: fallbackQuestion,
+      };
+      setMessages([...nextTranscript, botMessage]);
     } finally {
       setIsSending(false);
-      onNavigate("feedback");
     }
   };
+
+  const handleFinish = () => {
+    const lastBotReply = [...visibleMessages].reverse().find((message) => message.sender === "bot")?.text;
+    onFeedback(buildFeedback(visibleMessages, lastBotReply));
+    onNavigate("feedback");
+  };
+
+  const hasUserResponse = visibleMessages.some((message) => message.sender === "user");
 
   return (
     <div className="chat-box">
@@ -125,12 +113,15 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           type="text"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder={isSending ? "Preparing feedback..." : "Type your response..."}
+          placeholder={isSending ? "Thinking..." : "Type your response..."}
           aria-label="Type a message"
           disabled={isSending}
         />
         <button type="submit" className="primary-btn" disabled={isSending}>
           {isSending ? "Sending" : "Send"}
+        </button>
+        <button type="button" className="secondary-btn" onClick={handleFinish} disabled={!hasUserResponse}>
+          Finish
         </button>
       </form>
     </div>
