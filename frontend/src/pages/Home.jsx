@@ -10,24 +10,34 @@ import {
   Sparkles, 
   CheckCircle2, 
   ArrowRight, 
-  Flame 
+  Flame,
+  Zap,
+  Wind
 } from "lucide-react";
 import ImageSlider from "../components/ImageSlider";
+import BreathingTool from "../components/BreathingTool";
 
 const emotionalStates = [
   {
-    id: "panic",
-    label: "Panic or Acute Anxiety",
-    risk: "Moderate to High",
-    riskClass: "high",
-    tip: "Grounding exercise: Take 5 slow deep breaths. Look around and name 5 items in the room, touch 4 textures, listen for 3 ambient sounds."
+    id: "stress",
+    label: "High Stress & Work Overwhelm",
+    risk: "Moderate Stress",
+    riskClass: "moderate",
+    tip: "Stress De-escalation: Step away from screens. Follow our interactive 4-7-8 box-breathing tool below to reduce adrenaline and cortisol."
   },
   {
-    id: "numb",
-    label: "Feeling Numb or Detached",
-    risk: "Moderate",
+    id: "burnout",
+    label: "Burnout & Physical Fatigue",
+    risk: "Moderate Priority",
     riskClass: "moderate",
-    tip: "Sensory reconnect: Place your feet firmly on the ground, drink a sip of cold water, or wrap yourself in a warm blanket."
+    tip: "Energy Reset: Place your hands over your eyes for 30 seconds. Do a gentle neck stretch and drink a glass of fresh water."
+  },
+  {
+    id: "panic",
+    label: "Panic or Acute Anxiety",
+    risk: "High Priority",
+    riskClass: "high",
+    tip: "Grounding exercise: Take 5 slow deep breaths. Look around and name 5 items in the room, touch 4 textures, listen for 3 ambient sounds."
   },
   {
     id: "flashbacks",
@@ -38,10 +48,10 @@ const emotionalStates = [
   },
   {
     id: "seeking",
-    label: "Seeking Gentle Advice & Overview",
+    label: "Seeking Stress & Trauma Overview",
     risk: "Low Priority",
     riskClass: "low",
-    tip: "Exploratory Care: Our guided assessment will gently ask 3 questions to generate personalized care suggestions."
+    tip: "Exploratory Care: Our guided assessment will gently ask 3 questions to generate personalized care and stress reduction suggestions."
   }
 ];
 
@@ -78,7 +88,7 @@ const workflowSteps = [
 
 const trustMetrics = [
   { icon: Lock, label: "100% Confidential", desc: "Private, anonymous assessment sessions" },
-  { icon: Brain, label: "Trauma-Informed", desc: "Built with clinical care principles" },
+  { icon: Brain, label: "Trauma & Stress Care", desc: "Built with clinical care principles" },
   { icon: Sparkles, label: "Instant Analysis", desc: "Real-time risk priority classification" },
   { icon: CheckCircle2, label: "24/7 Available", desc: "Immediate access anytime you need" },
 ];
@@ -94,13 +104,13 @@ export default function Home({ onNavigate }) {
         <ImageSlider onActionClick={onNavigate} />
       </section>
 
-      {/* Interactive Trauma Diagnostic Quick Check-in Simulator */}
+      {/* Interactive Trauma & Stress Quick Check-in Simulator */}
       <section className="interactive-checkin-card">
         <div className="section-header">
           <p className="eyebrow accent">Interactive Check-In</p>
           <h2 className="home-section-title">How are you feeling right now?</h2>
           <p className="home-section-desc">
-            Select your current emotional state for an instant coping technique and risk priority preview.
+            Select your current stress or emotional state for an instant coping technique and care priority preview.
           </p>
         </div>
 
@@ -139,7 +149,7 @@ export default function Home({ onNavigate }) {
             <div className="coping-tip-box">
               <Flame size={20} style={{ shrink: 0, marginTop: "2px" }} />
               <div>
-                <strong>Recommended Immediate Grounding Step:</strong>
+                <strong>Recommended Immediate Relief Step:</strong>
                 <p style={{ margin: "0.2rem 0 0" }}>{selectedState.tip}</p>
               </div>
             </div>
@@ -150,12 +160,17 @@ export default function Home({ onNavigate }) {
                 className="primary-btn"
                 onClick={() => onNavigate("chat")}
               >
-                <span>Start Trauma Assessment</span>
+                <span>Start Assessment</span>
                 <ArrowRight size={18} />
               </button>
             </div>
           </motion.div>
         </AnimatePresence>
+      </section>
+
+      {/* Interactive Stress Relief Guided Breathing Tool */}
+      <section>
+        <BreathingTool />
       </section>
 
       {/* Trust & Safety Features */}
@@ -213,7 +228,7 @@ export default function Home({ onNavigate }) {
       {/* Centered High-Impact Bottom Call To Action Banner */}
       <section className="cta-banner">
         <div className="cta-content">
-          <h2>Ready for a Gentle Trauma Assessment?</h2>
+          <h2>Ready for Your Stress & Trauma Assessment?</h2>
           <p>
             Take the first step toward understanding your current support needs in a completely safe, private environment.
           </p>
@@ -223,7 +238,7 @@ export default function Home({ onNavigate }) {
               className="slider-btn primary"
               onClick={() => onNavigate("chat")}
             >
-              Start Trauma Assessment
+              Start Assessment
             </button>
             <button
               type="button"

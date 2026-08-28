@@ -8,21 +8,21 @@ const prompts = [
   {
     key: "experience",
     stepName: "Initial Situation",
-    text: "What experience or situation would you like support with today?",
+    text: "What experience, trauma, or stress challenge would you like support with today?",
     suggestions: [
+      "High work, academic, or life stress and burnout",
       "Struggling with memories of a past event",
-      "Feeling overwhelmed by recent emotional stress",
-      "Experiencing sudden anxiety and tension"
+      "Experiencing sudden anxiety, panic, or tension"
     ]
   },
   {
     key: "feeling",
     stepName: "Current Impact",
-    text: "How is this situation affecting your emotions or body right now?",
+    text: "How is this situation or stress affecting your emotions or body right now?",
     suggestions: [
+      "Physical tension, headaches, and fast heart rate",
       "Constantly on edge, tense, and alert",
-      "Feeling emotionally numb or detached",
-      "Difficulty sleeping or having nightmares"
+      "Feeling emotionally exhausted, numb, or detached"
     ]
   },
   {
@@ -30,24 +30,24 @@ const prompts = [
     stepName: "Helpful Support",
     text: "What kind of support or guidance would feel most helpful to you next?",
     suggestions: [
-      "Immediate grounding & calming exercises",
+      "Immediate stress reduction & box-breathing exercises",
       "Understanding my risk priority level",
-      "Action steps for a professional follow-up"
+      "Action steps for professional stress & trauma care"
     ]
   },
 ];
 
 function buildFeedback(answers, apiResponse) {
   const safeAnswers = {
-    experience: answers?.experience || "General trauma assessment inquiry",
-    feeling: answers?.feeling || "Experiencing emotional or physical strain",
-    support: answers?.support || "Seeking grounding and clinical action steps",
+    experience: answers?.experience || "General trauma and stress assessment inquiry",
+    feeling: answers?.feeling || "Experiencing emotional or physical stress",
+    support: answers?.support || "Seeking stress reduction and clinical care plan",
   };
 
   const combinedText = Object.values(safeAnswers).join(" ").toLowerCase();
   
-  const urgentTerms = ["unsafe", "suicide", "self harm", "hurt myself", "danger", "panic", "flashback", "nightmare", "severe"];
-  const moderateTerms = ["fear", "anxiety", "memories", "stress", "alone", "numb", "detached", "tension"];
+  const urgentTerms = ["unsafe", "suicide", "self harm", "hurt myself", "danger", "panic", "flashback", "nightmare", "severe", "exhausted", "burnout"];
+  const moderateTerms = ["fear", "anxiety", "memories", "stress", "tension", "headaches", "work", "overwhelmed", "alone", "numb", "detached"];
   
   const isHigh = urgentTerms.some((term) => combinedText.includes(term));
   const isModerate = moderateTerms.some((term) => combinedText.includes(term));
@@ -56,36 +56,36 @@ function buildFeedback(answers, apiResponse) {
 
   const recommendations = {
     High: [
-      "Prioritize immediate safety. Reach out to a trusted loved one, counselor, or 24/7 crisis support line immediately.",
-      "Practice 5-4-3-2-1 Sensory Grounding: Name 5 visible objects, 4 touchable textures, 3 sounds around you.",
-      "Schedule a priority consultation with a trauma-informed psychologist or medical provider.",
-      "Keep a safe, soothing environment with minimal overwhelming stimuli."
+      "Prioritize immediate safety and stress de-escalation. Connect with a trusted healthcare responder or 24/7 helpline.",
+      "Use Guided 4-7-8 Box Breathing immediately: Inhale 4s, Hold 4s, Exhale 4s, Rest 4s.",
+      "Schedule a priority evaluation for acute stress or PTSD with a certified therapist.",
+      "Minimize overwhelming stimuli and isolate a quiet, comforting space."
     ],
     Moderate: [
-      "Plan a supportive health check-in within the next 24 to 48 hours.",
-      "Use guided box-breathing: Inhale for 4 seconds, hold for 4 seconds, exhale for 4 seconds, rest for 4 seconds.",
-      "Maintain a daily log of emotional triggers and physical stress symptoms.",
-      "Engage in restorative activities like light walking, gentle stretching, or warm baths."
+      "Implement a structured daily stress-management routine (Box breathing twice daily).",
+      "Practice Progressive Muscle Relaxation (PMR): Tense and release muscle groups from feet to jaw.",
+      "Maintain a daily stress log identifying specific triggers, caffeine/sleep patterns, and emotional spikes.",
+      "Set firm boundaries around work/study hours and take 10-minute sensory breaks."
     ],
     Low: [
-      "Continue monitoring your daily stress levels and maintaining restorative routines.",
-      "Keep trusted family or friend contacts easily accessible.",
-      "Practice regular mindfulness, steady sleep schedules, and proper hydration.",
-      "Review your personalized wellness plan whenever new stressors arise."
+      "Maintain steady sleep hygiene (7-8 hours per night) and regular hydration.",
+      "Incorporate 15 minutes of light physical movement or nature walking daily.",
+      "Keep a journal of positive grounding moments and stress relief milestones.",
+      "Review your personalized care plan whenever new life stressors emerge."
     ],
   };
 
   const summaries = {
-    High: "High Trauma Support Priority: Response analysis indicates acute emotional or physical distress requiring active care and grounding.",
-    Moderate: "Moderate Trauma Support Priority: Response analysis indicates noticeable emotional strain benefiting from structured coping routines.",
-    Low: "Low Trauma Support Priority: Response analysis indicates manageable stress levels suitable for self-guided wellness and routine tracking."
+    High: "High Stress & Trauma Support Priority: Response analysis indicates acute emotional/physical strain requiring active intervention and stress de-escalation.",
+    Moderate: "Moderate Stress & Trauma Priority: Response analysis indicates noticeable stress and burnout risk benefiting from structured coping routines.",
+    Low: "Low Stress Priority: Response analysis indicates manageable tension levels suitable for routine self-care and wellness tracking."
   };
 
   return {
     answers: safeAnswers,
     riskLevel,
     recommendations: recommendations[riskLevel],
-    backendReply: apiResponse?.reply || "Assessment completed successfully. Tailored guidance generated based on clinical trauma protocols.",
+    backendReply: apiResponse?.reply || "Assessment completed successfully. Tailored trauma & stress management plan generated.",
     summary: summaries[riskLevel],
     createdAt: new Date().toISOString(),
   };
@@ -134,7 +134,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
     addMessage({
       id: Date.now() + 1,
       sender: "bot",
-      text: "Thank you. Analyzing your responses and generating your trauma assessment feedback...",
+      text: "Thank you. Analyzing your responses and generating your trauma & stress assessment feedback...",
     });
 
     let apiResponse = null;
@@ -175,7 +175,7 @@ export default function ChatBox({ onFeedback, onNavigate }) {
           </div>
           <div>
             <div className="chat-title-wrap">
-              <span className="chat-title">Trauma Assessment Assistant</span>
+              <span className="chat-title">Trauma & Stress Assessment Assistant</span>
               <span className="chat-online-badge">
                 <span className="online-dot" /> Live Active
               </span>
