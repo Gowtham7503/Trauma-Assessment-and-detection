@@ -5,10 +5,11 @@ const CHAT_STORAGE_KEY = "trauma-assessment-chat";
 const initialBotMessage = {
   id: 1,
   sender: "bot",
-  text: "What made you seek support today? You can describe stress, a trauma-related experience, or both in your own words.",
+  text: "What is the main reason you are seeking support today? You can mention current stress, something upsetting that happened, or both.",
 };
 
 const staleInitialPrompt = "Which area should we focus on first: current stress, a trauma-related experience, or both?";
+const unclearInitialPrompt = "What made you seek support today? You can describe stress, a trauma-related experience, or both in your own words.";
 
 export function useChat() {
   const [messages, setMessages] = useState(() => {
@@ -19,7 +20,7 @@ export function useChat() {
       if (
         parsedMessages.length === 1
         && parsedMessages[0]?.sender === "bot"
-        && parsedMessages[0]?.text === staleInitialPrompt
+        && [staleInitialPrompt, unclearInitialPrompt].includes(parsedMessages[0]?.text)
       ) {
         return [initialBotMessage];
       }
