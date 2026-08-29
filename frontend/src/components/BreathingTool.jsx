@@ -56,7 +56,7 @@ export default function BreathingTool() {
           <Wind size={16} />
           <span>Interactive Stress Relief Tool</span>
         </div>
-        <h3 className="breathing-title">Guided 4-7-8 Box Breathing Routine</h3>
+        <h3 className="breathing-title">Guided 4-4-4 Box Breathing Routine</h3>
         <p className="breathing-subtitle">
           Clinically proven to activate the parasympathetic nervous system, lower cortisol, and instantly reduce stress.
         </p>
