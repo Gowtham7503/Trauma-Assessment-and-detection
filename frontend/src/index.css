@@ -568,6 +568,23 @@ button {
   background: #ffffff;
   box-shadow: 0 15px 40px -10px rgba(13, 148, 136, 0.25);
   position: relative;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+  transition: box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.breathing-circle:hover {
+  box-shadow: 0 20px 48px -10px rgba(13, 148, 136, 0.38);
+}
+
+.breathing-circle:focus-visible {
+  outline: 4px solid rgba(6, 182, 212, 0.28);
+  outline-offset: 8px;
+}
+
+.breathing-circle:active {
+  background: #f8fafc;
 }
 
 .breathing-inner-content {

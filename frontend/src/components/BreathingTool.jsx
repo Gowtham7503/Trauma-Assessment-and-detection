@@ -17,6 +17,10 @@ export default function BreathingTool() {
 
   const currentPhase = phases[phaseIndex];
 
+  const handleToggle = () => {
+    setIsActive((active) => !active);
+  };
+
   useEffect(() => {
     let timer = null;
     if (isActive) {
@@ -63,7 +67,8 @@ export default function BreathingTool() {
       </div>
 
       <div className="breathing-visualizer-container">
-        <motion.div
+        <motion.button
+          type="button"
           animate={{
             scale: isActive
               ? phaseIndex === 0
@@ -79,12 +84,15 @@ export default function BreathingTool() {
           transition={{ duration: 3.8, ease: "easeInOut" }}
           className="breathing-circle"
           style={{ borderColor: currentPhase.color }}
+          onClick={handleToggle}
+          aria-pressed={isActive}
+          aria-label={isActive ? "Pause breathing routine" : "Start breathing routine"}
         >
           <div className="breathing-inner-content">
             <span className="phase-timer">{timeLeft}s</span>
-            <span className="phase-name">{isActive ? currentPhase.name : "Ready to Start"}</span>
+            <span className="phase-name">{isActive ? currentPhase.name : "Tap to Start"}</span>
           </div>
-        </motion.div>
+        </motion.button>
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -103,7 +111,7 @@ export default function BreathingTool() {
         <button
           type="button"
           className={`slider-btn ${isActive ? "secondary" : "primary"}`}
-          onClick={() => setIsActive(!isActive)}
+          onClick={handleToggle}
         >
           {isActive ? <Pause size={18} /> : <Play size={18} />}
           <span>{isActive ? "Pause Routine" : "Start Guided Breathing"}</span>
